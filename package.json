@@ -1,0 +1,15 @@
+{
+  "scripts": {
+    "build": "tsc",
+    "test": "tsc && node lib/test.js"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.184",
+    "@types/node": "^18.7.16",
+    "typescript": "^4.8.3"
+  },
+  "dependencies": {
+    "fast-xml-parser": "^4.0.9",
+    "lodash": "^4.17.21"
+  }
+}
