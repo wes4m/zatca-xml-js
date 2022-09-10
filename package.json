@@ -1,7 +1,7 @@
 {
   "scripts": {
     "build": "tsc",
-    "test": "tsc && node lib/test.js"
+    "test": "tsc && node lib/tests/test.js"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.184",

@@ -105,4 +105,5 @@ dist
 
 
 /lib
+/src/tests
 .DS_STORE
