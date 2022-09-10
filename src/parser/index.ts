@@ -85,7 +85,10 @@ export class XMLDocument {
         if (_.isEmpty(query_result)) return false;
 
         if (parent_xml_object[last_tag] instanceof Array) {
-            parent_xml_object[last_tag] = _.filter(parent_xml_object[last_tag], () => !_.matches(condition));
+            parent_xml_object[last_tag] = _.filter(parent_xml_object[last_tag], (element) => {
+                return !_.matches(condition)(element);
+            });
+            if (_.isEmpty(parent_xml_object[last_tag])) delete parent_xml_object[last_tag];
         } else {
             delete parent_xml_object[last_tag];
         }
