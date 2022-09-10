@@ -55,9 +55,12 @@ export const getCertificateHash = (certificate_string: string): string => {
  */
 export const createInvoiceDigitalSignature = (invoice_hash: string, private_key_string: string): string => {
     const invoice_hash_bytes = new Buffer(invoice_hash, "base64");
+    const cleanedup_private_key_string: string = cleanUpPrivateKeyString(private_key_string);
+    const wrapped_private_key_string: string = `-----BEGIN EC PRIVATE KEY-----\n${cleanedup_private_key_string}\n-----END EC PRIVATE KEY-----`;
+
     var sign = createSign('sha256');
     sign.update(invoice_hash_bytes);
-    var signature = Buffer.from(sign.sign(private_key_string)).toString("base64");
+    var signature = Buffer.from(sign.sign(wrapped_private_key_string)).toString("base64");
     return signature;
 }
 
