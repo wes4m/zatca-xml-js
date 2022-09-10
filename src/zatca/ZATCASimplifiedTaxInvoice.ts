@@ -1,3 +1,7 @@
+import { XmlCanonicalizer } from "xmldsigjs";
+import xmldom from "xmldom";
+import { createHash } from "crypto";
+
 import { XMLDocument } from "../parser";
 import DEFAULT_INVOICE from "./templates/simplified_tax_invoice_template";
 
@@ -27,20 +31,25 @@ export class ZATCASimplifiedTaxInvoice {
      * Removes (UBLExtensions (Signing), Signature Envelope, and QR data) Elements. Then canonicalizes the XML to c14n.
      * In Order to prep for hashing.
      */
-    private getPureInvoice() {
+    private getPureInvoiceString(): string {
         const invoice_copy = new XMLDocument(this.invoice_xml.toString({no_header: false}));
         invoice_copy.delete("Invoice/ext:UBLExtensions");
         invoice_copy.delete("Invoice/cac:Signature");
         invoice_copy.delete("Invoice/cac:AdditionalDocumentReference", {"cbc:ID": "QR"});
 
-        return invoice_copy;
+        const invoice_xml_dom = (new xmldom.DOMParser()).parseFromString(
+            invoice_copy.toString({no_header: false})
+        );
+        
+        var canonicalizer = new XmlCanonicalizer(false, false);
+        const canonicalized_xml_str: string = canonicalizer.Canonicalize(invoice_xml_dom);        
+
+        return canonicalized_xml_str;
     }
 
     getInvoiceHash(): string {
-        const pure_invoice: XMLDocument = this.getPureInvoice();
-        console.log(pure_invoice.toString({no_header: false}));
-        
-        return "";
+        const pure_invoice_string: string = this.getPureInvoiceString();
+        return createHash("sha256").update(pure_invoice_string).digest('base64');
     }
 
 
