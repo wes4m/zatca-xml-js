@@ -27,18 +27,40 @@ export const generateQR = ({invoice_xml, digital_signature, public_key, certific
 
     // Extract required tags
     const seller_name = invoice_xml.get("Invoice/cac:AccountingSupplierParty/cac:Party/cac:PartyLegalEntity/cbc:RegistrationName")?.[0];
-    const VAT_number = invoice_xml.get("Invoice/cac:AccountingSupplierParty/cac:Party/cac:PartyTaxScheme/cbc:CompanyID")?.[0];
-    const invoice_total = invoice_xml.get("Invoice/cac:LegalMonetaryTotal/cbc:TaxInclusiveAmount")?.[0]["#text"];
-    const VAT_total = invoice_xml.get("Invoice/cac:TaxTotal")?.[0]["cbc:TaxAmount"]["#text"];
+    const VAT_number = invoice_xml.get("Invoice/cac:AccountingSupplierParty/cac:Party/cac:PartyTaxScheme/cbc:CompanyID")?.[0].toString();
+    const invoice_total = invoice_xml.get("Invoice/cac:LegalMonetaryTotal/cbc:TaxInclusiveAmount")?.[0]["#text"].toString();
+    const VAT_total = invoice_xml.get("Invoice/cac:TaxTotal")?.[0]["cbc:TaxAmount"]["#text"].toString();
     const issue_date = invoice_xml.get("Invoice/cbc:IssueDate")?.[0];
     const issue_time = invoice_xml.get("Invoice/cbc:IssueTime")?.[0];
-    const invoice_type = invoice_xml.get("Invoice/cbc:InvoiceTypeCode")?.[0]["@_name"];
+
+    // TODO: to detect if simplified invoice or not (not used currently assuming all simplified tax invoice)
+    const invoice_type = invoice_xml.get("Invoice/cbc:InvoiceTypeCode")?.[0]["@_name"].toString();
 
     const datetime = `${issue_date} ${issue_time}`;
     const formatted_datetime = moment(datetime).format("yyyy-mm-DDTHH:mm:ss")+"Z";
     
-    // TODO TLV tags
-    const qr = "TODO_FROM_TLV";
+    const qr_tlv = TLV([
+        seller_name,
+        VAT_number,
+        formatted_datetime,
+        invoice_total,
+        VAT_total,
+        invoice_hash,
+        Buffer.from(digital_signature, "base64"),
+        public_key,
+        certificate_signature
+    ]);
 
-    return Buffer.from(qr).toString("base64");
+    return qr_tlv.toString("base64");
+}
+
+
+
+const TLV = (tags: any[]): Buffer => {
+    const tlv_tags: Buffer[] = []
+    tags.forEach((tag, i) => {
+        const current_tlv_value: Buffer = Buffer.from([i+1, tag.length, ...Buffer.from(tag)]);
+        tlv_tags.push(current_tlv_value)
+    });
+    return Buffer.concat(tlv_tags);
 }
