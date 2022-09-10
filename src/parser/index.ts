@@ -95,15 +95,16 @@ export class XMLDocument {
 
 
     /**
-     * Adds an XMLObject to a specific element given its path in tags. 
+     * Sets (Adds if does not exist) an XMLObject to a specific element given its path in tags. 
      * Requires the query path to be already in the XML. It does not create the path for you.
      * Accepts condition for filtering.
-     * @param add_xml XMLObject or String for other values to be added.
      * @param path_query String path of element tags. e.g: "Invoice/cac:Delivery/cbc:ActualDeliveryDate"
+     * @param overwrite Boolean makes operation a set instead of an add.
+     * @param set_xml XMLObject or String for other values to be set/added.
      * @param condition Any condition. e.g: {"name": "example"}, "2022-03-13"
-     * @returns Boolean true if added, false if unable to add.
+     * @returns Boolean true if set/add, false if unable to set/add.
      */
-    add(path_query: string, add_xml: XMLObject | string, condition?: any): boolean {        
+    set(path_query: string, overwrite: boolean, set_xml: XMLObject | string, condition?: any): boolean {        
         if (!this.xml_object) return false;
 
         const path_tags = path_query.split("/");
@@ -131,14 +132,14 @@ export class XMLDocument {
         
         try {
             if (parent_xml_object[last_tag][tag] instanceof Array) {
-                parent_xml_object[last_tag][tag] = [...parent_xml_object[last_tag][tag], add_xml];
+                parent_xml_object[last_tag][tag] = !overwrite ? [...parent_xml_object[last_tag][tag], set_xml] : set_xml;
             } else {
                 if (parent_xml_object[last_tag][tag]) {
                     // Tag already exists but is not an Array. (Adding to it should turn it into an array)
-                    parent_xml_object[last_tag][tag] = [parent_xml_object[last_tag][tag], add_xml];
+                    parent_xml_object[last_tag][tag] = !overwrite ? [parent_xml_object[last_tag][tag], set_xml] : set_xml;
                 } else {
                     // New tag
-                    parent_xml_object[last_tag][tag] = add_xml;
+                    parent_xml_object[last_tag][tag] = set_xml;
                 }
             }
 
