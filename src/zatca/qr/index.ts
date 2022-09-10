@@ -1,3 +1,6 @@
+import moment from "moment";
+
+
 import { XMLDocument } from "../../parser";
 import { getInvoiceHash } from "../signing";
 
@@ -30,7 +33,12 @@ export const generateQR = ({invoice_xml, digital_signature, public_key, certific
     const issue_date = invoice_xml.get("Invoice/cbc:IssueDate")?.[0];
     const issue_time = invoice_xml.get("Invoice/cbc:IssueTime")?.[0];
     const invoice_type = invoice_xml.get("Invoice/cbc:InvoiceTypeCode")?.[0]["@_name"];
-    
 
-    return "";
+    const datetime = `${issue_date} ${issue_time}`;
+    const formatted_datetime = moment(datetime).format("yyyy-mm-DDTHH:mm:ss")+"Z";
+    
+    // TODO TLV tags
+    const qr = "TODO_FROM_TLV";
+
+    return Buffer.from(qr).toString("base64");
 }
