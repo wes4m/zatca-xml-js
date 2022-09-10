@@ -48,9 +48,9 @@ export const getCertificateHash = (certificate_string: string): string => {
 
 
 /**
- * 
+ * Creates invoice digital signature according to ZATCA (TODO RULE NUMBER BUSSINESS TERM)
  * @param invoice_hash String base64 encoded invoice hash.
- * @param private_key_string String base64 encoded private key body.
+ * @param private_key_string String base64 encoded ec-secp256k1 private key body.
  * @returns String base64 encoded digital signature.
  */
 export const createInvoiceDigitalSignature = (invoice_hash: string, private_key_string: string): string => {
@@ -59,4 +59,23 @@ export const createInvoiceDigitalSignature = (invoice_hash: string, private_key_
     sign.update(invoice_hash_bytes);
     var signature = Buffer.from(sign.sign(private_key_string)).toString("base64");
     return signature;
+}
+
+
+/**
+ * Removes header and footer from certificate string.
+ * @param certificate_string.
+ * @returns String base64 encoded certificate body.
+ */
+export const cleanUpCertificateString = (certificate_string: string): string => {
+    return certificate_string.replace("-----BEGIN CERTIFICATE-----\n", "").replace("-----END CERTIFICATE-----", "").trim()
+}
+
+/**
+ * Removes header and footer from private key string.
+ * @param privatek_key_string ec-secp256k1 private key string.
+ * @returns String base64 encoded private key body.
+ */
+ export const cleanUpPrivateKeyString = (certificate_string: string): string => {
+    return certificate_string.replace("-----BEGIN EC PRIVATE KEY-----\n", "").replace("-----END EC PRIVATE KEY-----", "").trim()
 }
