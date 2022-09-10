@@ -1,6 +1,6 @@
 import { XmlCanonicalizer } from "xmldsigjs";
 import xmldom from "xmldom";
-import { createHash, createSign } from "crypto";
+import { createHash, createSign, X509Certificate } from "crypto";
 
 import { XMLDocument } from "../../parser";
 
@@ -61,6 +61,24 @@ export const createInvoiceDigitalSignature = (invoice_hash: string, private_key_
     return signature;
 }
 
+/**
+ * Gets certificate hash, x509IssuerName, and X509SerialNumber and formats them according to ZATCA (TODO RULE NUMBER BUSSINESS TERM)
+ * @param certificate_string String base64 encoded certificate body.
+ * @returns {hash: string, issuer: string, serial_number: string}.
+ */
+export const getCertificateInfo = (certificate_string: string): {hash: string, issuer: string, serial_number: string} => {
+    const cleanedup_certificate_string: string = cleanUpCertificateString(certificate_string);
+    const wrapped_certificate_string: string = `-----BEGIN CERTIFICATE-----\n${cleanedup_certificate_string}\n-----END CERTIFICATE-----`;
+
+    const hash = getCertificateHash(cleanedup_certificate_string);
+    const x509 = new X509Certificate(wrapped_certificate_string);  
+
+    return {
+        hash: hash,
+        issuer: x509.issuer.split("\n").reverse().join(", "),
+        serial_number: BigInt(`0x${x509.serialNumber}`).toString(10)
+    };
+}
 
 /**
  * Removes header and footer from certificate string.
