@@ -23,9 +23,8 @@ export class ZATCASimplifiedTaxInvoice {
 
     }
 
-
-    getInvoiceHash(): string {
-        return getInvoiceHash(this.invoice_xml);
+    getXML(): XMLDocument {
+        return this.invoice_xml;
     }
 
 }
