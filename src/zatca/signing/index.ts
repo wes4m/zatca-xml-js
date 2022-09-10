@@ -1,6 +1,6 @@
 import { XmlCanonicalizer } from "xmldsigjs";
 import xmldom from "xmldom";
-import { createHash } from "crypto";
+import { createHash, createSign } from "crypto";
 
 import { XMLDocument } from "../../parser";
 
@@ -38,10 +38,25 @@ export const getInvoiceHash = (invoice_xml: XMLDocument): string => {
 
 /**
  * Hashes Certificate according to ZATCA (TODO RULE NUMBER BUSSINESS TERM)
- * @param certificate_string base64 encoded certificate body string
+ * @param certificate_string String base64 encoded certificate body.
  * @returns String certificate hash encoded in base64.
  */
 export const getCertificateHash = (certificate_string: string): string => {
     const certificate_hash = Buffer.from(createHash("sha256").update(certificate_string).digest('hex')).toString("base64");
     return certificate_hash;
+}
+
+
+/**
+ * 
+ * @param invoice_hash String base64 encoded invoice hash.
+ * @param private_key_string String base64 encoded private key body.
+ * @returns String base64 encoded digital signature.
+ */
+export const createInvoiceDigitalSignature = (invoice_hash: string, private_key_string: string): string => {
+    const invoice_hash_bytes = new Buffer(invoice_hash, "base64");
+    var sign = createSign('sha256');
+    sign.update(invoice_hash_bytes);
+    var signature = Buffer.from(sign.sign(private_key_string)).toString("base64");
+    return signature;
 }
