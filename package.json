@@ -11,6 +11,7 @@
   "dependencies": {
     "fast-xml-parser": "^4.0.9",
     "lodash": "^4.17.21",
+    "xmldom": "^0.6.0",
     "xmldsigjs": "^2.5.0"
   }
 }
