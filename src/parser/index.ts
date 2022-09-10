@@ -12,9 +12,14 @@ export class XMLDocument {
     };
 
 
-    constructor(xml_str: string) {
+    constructor(xml_str?: string) {
         const parser = new XMLParser(this.parser_options);
-        this.xml_object = parser.parse(xml_str) ?? {};
+
+        if (xml_str) {
+            this.xml_object = parser.parse(xml_str) ?? {};
+        } else {
+            this.xml_object = {'?xml': { '@_version': '1.0', '@_encoding': 'UTF-8' }};
+        }
     }
 
 
@@ -86,6 +91,63 @@ export class XMLDocument {
         }
 
         return true;
+    }
+
+
+    /**
+     * Adds an XMLObject to a specific element given its path in tags. 
+     * Requires the query path to be already in the XML. It does not create the path for you.
+     * Accepts condition for filtering.
+     * @param add_xml XMLObject or String for other values to be added.
+     * @param path_query String path of element tags. e.g: "Invoice/cac:Delivery/cbc:ActualDeliveryDate"
+     * @param condition Any condition. e.g: {"name": "example"}, "2022-03-13"
+     * @returns Boolean true if added, false if unable to add.
+     */
+    add(path_query: string, add_xml: XMLObject | string, condition?: any): boolean {        
+        if (!this.xml_object) return false;
+
+        const path_tags = path_query.split("/");
+        const tag = path_tags.splice(path_tags.length-1, 1)[0];
+        path_query = path_tags.join("/");
+
+        let {xml_object, parent_xml_object, last_tag} = this.getElement(this.xml_object, path_query ?? "");
+        let query_result: XMLQueryResult = xml_object;
+        
+
+        if (query_result && !(query_result instanceof Array)) {
+            query_result = [query_result];
+        }
+        if (condition) {
+            query_result = this.filterByCondition(query_result, condition);
+        }
+
+        if (_.isEmpty(query_result)) return false;
+
+        // Workaround for adding to root (since it has no key)
+        if(!path_query) {
+            parent_xml_object = {"root": this.xml_object};
+            last_tag = "root";
+        }
+        
+        try {
+            if (parent_xml_object[last_tag][tag] instanceof Array) {
+                parent_xml_object[last_tag][tag] = [...parent_xml_object[last_tag][tag], add_xml];
+            } else {
+                if (parent_xml_object[last_tag][tag]) {
+                    // Tag already exists but is not an Array. (Adding to it should turn it into an array)
+                    parent_xml_object[last_tag][tag] = [parent_xml_object[last_tag][tag], add_xml];
+                } else {
+                    // New tag
+                    parent_xml_object[last_tag][tag] = add_xml;
+                }
+            }
+
+            return true;
+        } catch(error: any) {
+            console.log(error.message);
+        }
+        
+        return false;
     }
 
    
