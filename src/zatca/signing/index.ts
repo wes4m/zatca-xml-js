@@ -1,6 +1,8 @@
 import { XmlCanonicalizer } from "xmldsigjs";
 import xmldom from "xmldom";
 import { createHash, createSign, X509Certificate } from "crypto";
+// @ts-ignore
+import rfc5280 from 'asn1.js-rfc5280';
 
 import { XMLDocument } from "../../parser";
 
@@ -67,19 +69,30 @@ export const createInvoiceDigitalSignature = (invoice_hash: string, private_key_
 /**
  * Gets certificate hash, x509IssuerName, and X509SerialNumber and formats them according to ZATCA (TODO RULE NUMBER BUSSINESS TERM)
  * @param certificate_string String base64 encoded certificate body.
- * @returns {hash: string, issuer: string, serial_number: string}.
+ * @returns {hash: string, issuer: string, serial_number: string, public_key: Buffer, signature: Buffer}.
  */
-export const getCertificateInfo = (certificate_string: string): {hash: string, issuer: string, serial_number: string} => {
+export const getCertificateInfo = (certificate_string: string): {hash: string, issuer: string, serial_number: string, public_key: Buffer, signature: Buffer} => {
     const cleanedup_certificate_string: string = cleanUpCertificateString(certificate_string);
     const wrapped_certificate_string: string = `-----BEGIN CERTIFICATE-----\n${cleanedup_certificate_string}\n-----END CERTIFICATE-----`;
 
     const hash = getCertificateHash(cleanedup_certificate_string);
     const x509 = new X509Certificate(wrapped_certificate_string);  
 
+    // Signature, and public key extraction from x509 PEM certificate (asn1 rfc5280) 
+    // Crypto module does not have those functionalities so i'm the crypto boy now :(
+    // https://github.com/nodejs/node/blob/main/src/crypto/crypto_x509.cc
+    // https://linuxctl.com/2017/02/x509-certificate-manual-signature-verification/
+    // https://github.com/junkurihara/js-x509-utils/blob/develop/src/x509.js
+    // decode binary x509-formatted object
+    const decoded = rfc5280.Certificate.decode(x509.raw, 'der');
+    
+
     return {
         hash: hash,
         issuer: x509.issuer.split("\n").reverse().join(", "),
-        serial_number: BigInt(`0x${x509.serialNumber}`).toString(10)
+        serial_number: BigInt(`0x${x509.serialNumber}`).toString(10),
+        public_key: decoded.tbsCertificate.subjectPublicKeyInfo.subjectPublicKey.data,
+        signature: decoded.signature.data
     };
 }
 
