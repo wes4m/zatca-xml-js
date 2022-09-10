@@ -12,3 +12,4 @@ xml.add("Invoice/cbc:ActualDeliveryDateTest", {"TagExample2": "OK"});
 xml.add("Invoice/cbc:ActualDeliveryDateTest", {"TagExample3": "OK"});
 
 console.log(xml.get());
+console.log(xml.toString({no_header: true}));

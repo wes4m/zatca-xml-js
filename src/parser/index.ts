@@ -1,4 +1,4 @@
-import { XMLParser } from "fast-xml-parser";
+import { XMLBuilder, XMLParser } from "fast-xml-parser";
 import { XMLObject, XMLQueryResult } from "./types";
 import _ from "lodash";
 
@@ -148,6 +148,18 @@ export class XMLDocument {
         }
         
         return false;
+    }
+
+    toString({no_header}: {no_header?: boolean}) {
+        const builder = new XMLBuilder({
+            ...this.parser_options,
+            format: true,
+        });
+
+        let xml_str: string = builder.build(this.xml_object);
+        if (no_header) xml_str = xml_str.replace(`<?xml version="1.0" encoding="UTF-8"?>`, '');
+
+        return xml_str;
     }
 
    
