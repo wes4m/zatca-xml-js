@@ -1,6 +1,6 @@
 import { XMLDocument } from "../parser";
 import { getInvoiceHash } from "./signing";
-import DEFAULT_INVOICE from "./templates/simplified_tax_invoice_template";
+import defaultSimplifiedTaxInvoice from "./templates/simplified_tax_invoice_template";
 
 export class ZATCASimplifiedTaxInvoice {
 
@@ -16,7 +16,7 @@ export class ZATCASimplifiedTaxInvoice {
             this.invoice_xml = new XMLDocument(invoice_xml_str);
             if (!this.invoice_xml) throw ("Error parsing invoice XML string.")
         } else {
-            this.invoice_xml = new XMLDocument(DEFAULT_INVOICE);
+            this.invoice_xml = new XMLDocument(defaultSimplifiedTaxInvoice());
         }
 
         // TODO: Validate Invoice

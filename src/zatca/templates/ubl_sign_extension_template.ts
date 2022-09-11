@@ -36,14 +36,14 @@ const template = /* XML */`
                                 </ds:Transforms>
                                 <ds:DigestMethod
                                         Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
-                                <ds:DigestValue></ds:DigestValue>
+                                <ds:DigestValue>SET_INVOICE_HASH</ds:DigestValue>
                             </ds:Reference>
                             <ds:Reference
                                     Type="http://www.w3.org/2000/09/xmldsig#SignatureProperties"
                                     URI="#xadesSignedProperties">
                                 <ds:DigestMethod
                                         Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
-                                <ds:DigestValue></ds:DigestValue>
+                                <ds:DigestValue>SET_DIGITAL_SIGNATURE</ds:DigestValue>
                             </ds:Reference>
                         </ds:SignedInfo>
                         <ds:SignatureValue></ds:SignatureValue>
@@ -81,4 +81,12 @@ const template = /* XML */`
     </ext:UBLExtension>
 </ext:UBLExtensions>`;
 
-export default template;
+
+export default function populate(invoice_hash: string, digital_signature: string): string {
+    let populated_template = template;
+    populated_template = populated_template.replace("SET_INVOICE_HASH", invoice_hash);
+    populated_template = populated_template.replace("SET_DIGITAL_SIGNATURE", digital_signature);
+    // TODO: ..
+    // ..
+    return populated_template;
+};

@@ -53,4 +53,7 @@ const template = /* XML */`
     </cac:InvoiceLine>
 </Invoice>
 `;
-export default template;
+export default function populate(): string {
+    // TODO
+    return template;
+};

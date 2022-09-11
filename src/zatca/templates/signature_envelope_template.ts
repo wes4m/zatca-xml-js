@@ -4,4 +4,6 @@ const template = /* XML */`
       <cbc:SignatureMethod>urn:oasis:names:specification:ubl:dsig:enveloped:xades</cbc:SignatureMethod>
 </cac:Signature>`;
 
-export default template;
+export default function populate(): string {
+      return template;
+};
