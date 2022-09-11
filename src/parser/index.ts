@@ -104,10 +104,9 @@ export class XMLDocument {
      * @param path_query String path of element tags. e.g: "Invoice/cac:Delivery/cbc:ActualDeliveryDate"
      * @param overwrite Boolean makes operation a set instead of an add.
      * @param set_xml XMLObject or String for other values to be set/added.
-     * @param condition Any condition. e.g: {"name": "example"}, "2022-03-13"
      * @returns Boolean true if set/add, false if unable to set/add.
      */
-    set(path_query: string, overwrite: boolean, set_xml: XMLObject | string, condition?: any): boolean {        
+    set(path_query: string, overwrite: boolean, set_xml: XMLObject | string): boolean {        
         if (!this.xml_object) return false;
 
         const path_tags = path_query.split("/");
@@ -115,17 +114,7 @@ export class XMLDocument {
         path_query = path_tags.join("/");
 
         let {xml_object, parent_xml_object, last_tag} = this.getElement(this.xml_object, path_query ?? "");
-        let query_result: XMLQueryResult = xml_object;
-        
-
-        if (query_result && !(query_result instanceof Array)) {
-            query_result = [query_result];
-        }
-        if (condition) {
-            query_result = this.filterByCondition(query_result, condition);
-        }
-
-        if (_.isEmpty(query_result)) return false;
+        if (_.isEmpty(xml_object)) return false;
 
         // Workaround for adding to root (since it has no key)
         if(!path_query) {
