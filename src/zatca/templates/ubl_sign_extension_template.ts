@@ -1,4 +1,3 @@
-// TODO: work on this
 const template = /* XML */`
 <ext:UBLExtensions>
     <ext:UBLExtension>
@@ -55,23 +54,7 @@ const template = /* XML */`
                         <ds:Object>
                             <xades:QualifyingProperties Target="signature"
                                                         xmlns:xades="http://uri.etsi.org/01903/v1.3.2#">
-                                <xades:SignedProperties Id="xadesSignedProperties">
-                                    <xades:SignedSignatureProperties>
-                                        <xades:SigningTime>SET_SIGN_TIMESTAMP</xades:SigningTime>
-                                        <xades:SigningCertificate>
-                                            <xades:Cert>
-                                                <xades:CertDigest>
-                                                    <ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
-                                                    <ds:DigestValue>SET_CERTIFICATE_HASH</ds:DigestValue>
-                                                </xades:CertDigest>
-                                                <xades:IssuerSerial>
-                                                    <ds:X509IssuerName>SET_CERTIFICATE_ISSUER</ds:X509IssuerName>
-                                                    <ds:X509SerialNumber>SET_CERTIFICATE_SERIAL_NUMBER</ds:X509SerialNumber>
-                                                </xades:IssuerSerial>
-                                            </xades:Cert>
-                                        </xades:SigningCertificate>
-                                    </xades:SignedSignatureProperties>
-                                </xades:SignedProperties>
+                                SET_SIGNED_PROPERTIES_XML
                             </xades:QualifyingProperties>
                         </ds:Object>
                     </ds:Signature>
@@ -87,19 +70,13 @@ export default function populate(
     signed_properties_hash: string,
     digital_signature: string,
     certificate_string: string,
-    sign_timestamp: string,
-    certificate_hash: string,
-    certificate_issuer: string,
-    certificate_serial_number: string
+    signed_properties_xml: string
 ): string {
     let populated_template = template;
     populated_template = populated_template.replace("SET_INVOICE_HASH", invoice_hash);
     populated_template = populated_template.replace("SET_SIGNED_PROPERTIES_HASH", signed_properties_hash);
     populated_template = populated_template.replace("SET_DIGITAL_SIGNATURE", digital_signature);
     populated_template = populated_template.replace("SET_CERTIFICATE", certificate_string);
-    populated_template = populated_template.replace("SET_SIGN_TIMESTAMP", sign_timestamp);
-    populated_template = populated_template.replace("SET_CERTIFICATE_HASH", certificate_hash);
-    populated_template = populated_template.replace("SET_CERTIFICATE_ISSUER", certificate_issuer);
-    populated_template = populated_template.replace("SET_CERTIFICATE_SERIAL_NUMBER", certificate_serial_number);
+    populated_template = populated_template.replace("SET_SIGNED_PROPERTIES_XML", signed_properties_xml);
     return populated_template;
 };
