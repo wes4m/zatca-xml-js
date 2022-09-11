@@ -1,5 +1,4 @@
 const template = /* XML */`
-<ext:UBLExtensions>
     <ext:UBLExtension>
         <ext:ExtensionURI>urn:oasis:names:specification:ubl:dsig:enveloped:xades</ext:ExtensionURI>
         <ext:ExtensionContent>
@@ -61,8 +60,7 @@ const template = /* XML */`
                 </sac:SignatureInformation>
             </sig:UBLDocumentSignatures>
         </ext:ExtensionContent>
-    </ext:UBLExtension>
-</ext:UBLExtensions>`;
+    </ext:UBLExtension>`;
 
 
 export default function populate(
