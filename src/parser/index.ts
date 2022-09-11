@@ -147,10 +147,12 @@ export class XMLDocument {
         const builder = new XMLBuilder({
             ...this.parser_options,
             format: true,
+            indentBy: "    "
         });
 
         let xml_str: string = builder.build(this.xml_object);
         if (no_header) xml_str = xml_str.replace(`<?xml version="1.0" encoding="UTF-8"?>`, '');
+        xml_str = xml_str.replace(/&apos;/g, "'");
 
         return xml_str;
     }
