@@ -1,10 +1,14 @@
 import { XmlCanonicalizer } from "xmldsigjs";
 import xmldom from "xmldom";
 import { createHash, createSign, X509Certificate } from "crypto";
-// @ts-ignore
-import rfc5280 from 'asn1.js-rfc5280';
+import moment from "moment";
+import {Certificate} from "@fidm/x509";
+
 
 import { XMLDocument } from "../../parser";
+import { generateQR } from "../qr";
+import defaultUBLExtensions from "../templates/ubl_sign_extension_template";
+import defaultUBLExtensionsSignedProperties, {defaultUBLExtensionsSignedPropertiesForSigning} from "../templates/ubl_extension_signed_properties_template";
 
 /**
  * Removes (UBLExtensions (Signing), Signature Envelope, and QR data) Elements. Then canonicalizes the XML to c14n.
@@ -28,13 +32,18 @@ export const getPureInvoiceString = (invoice_xml: XMLDocument): string => {
     return canonicalized_xml_str;
 }
 
+
 /**
  * Hashes Invoice according to ZATCA (TODO RULE NUMBER BUSSINESS TERM)
  * @param invoice_xml XMLDocument.
  * @returns String invoice hash encoded in base64.
  */
 export const getInvoiceHash = (invoice_xml: XMLDocument): string => {
-    const pure_invoice_string: string = getPureInvoiceString(invoice_xml);
+    let pure_invoice_string: string = getPureInvoiceString(invoice_xml);
+    // A dumb workaround for whatever reason ZATCA XML devs decided to include those trailing spaces and a newlines. (without it the hash is incorrect)
+    pure_invoice_string = pure_invoice_string.replace("<cbc:ProfileID>", "\n    <cbc:ProfileID>");
+    pure_invoice_string = pure_invoice_string.replace("<cac:AccountingSupplierParty>", "\n    \n    <cac:AccountingSupplierParty>");
+    
     return createHash("sha256").update(pure_invoice_string).digest('base64');
 }
 
@@ -56,7 +65,7 @@ export const getCertificateHash = (certificate_string: string): string => {
  * @returns String base64 encoded digital signature.
  */
 export const createInvoiceDigitalSignature = (invoice_hash: string, private_key_string: string): string => {
-    const invoice_hash_bytes = new Buffer(invoice_hash, "base64");
+    const invoice_hash_bytes = Buffer.from(invoice_hash, "base64");
     const cleanedup_private_key_string: string = cleanUpPrivateKeyString(private_key_string);
     const wrapped_private_key_string: string = `-----BEGIN EC PRIVATE KEY-----\n${cleanedup_private_key_string}\n-----END EC PRIVATE KEY-----`;
 
@@ -84,15 +93,15 @@ export const getCertificateInfo = (certificate_string: string): {hash: string, i
     // https://linuxctl.com/2017/02/x509-certificate-manual-signature-verification/
     // https://github.com/junkurihara/js-x509-utils/blob/develop/src/x509.js
     // decode binary x509-formatted object
-    const decoded = rfc5280.Certificate.decode(x509.raw, 'der');
+    const cert = Certificate.fromPEM(Buffer.from(wrapped_certificate_string));
     
 
     return {
         hash: hash,
         issuer: x509.issuer.split("\n").reverse().join(", "),
         serial_number: BigInt(`0x${x509.serialNumber}`).toString(10),
-        public_key: decoded.tbsCertificate.subjectPublicKeyInfo.subjectPublicKey.data,
-        signature: decoded.signature.data
+        public_key: cert.publicKeyRaw,
+        signature: cert.signature
     };
 }
 
@@ -112,4 +121,101 @@ export const cleanUpCertificateString = (certificate_string: string): string => 
  */
  export const cleanUpPrivateKeyString = (certificate_string: string): string => {
     return certificate_string.replace("-----BEGIN EC PRIVATE KEY-----\n", "").replace("-----END EC PRIVATE KEY-----", "").trim()
+}
+
+
+interface generateSignatureXMLParams {
+    invoice_xml: XMLDocument,
+    certificate_string: string,
+    private_key_string: string
+}
+export const generateSignedXMLString = ({invoice_xml, certificate_string, private_key_string}: generateSignatureXMLParams): string => {
+
+    const invoice_copy: XMLDocument = new XMLDocument(invoice_xml.toString({no_header: false}));
+    
+    // 1: Invoice Hash
+    const invoice_hash = getInvoiceHash(invoice_xml);
+    console.log("Invoice hash: ", invoice_hash);
+    
+    // 2: Certificate hash and certificate info
+    const cert_info = getCertificateInfo(certificate_string);
+    console.log("Certificate info: ", cert_info);
+
+    // 3: Digital Certificate
+    const digital_signature = createInvoiceDigitalSignature(invoice_hash, private_key_string);
+    console.log("Digital signature: ", digital_signature);
+
+    // 4: QR
+    const qr = generateQR({
+        invoice_xml: invoice_xml,
+        digital_signature: digital_signature,
+        public_key: cert_info.public_key,
+        certificate_signature: cert_info.signature
+    });
+    console.log("QR: ", qr);
+
+
+    // Set Signed properties
+    const signed_properties_props = {
+        sign_timestamp: moment(new Date()).format("YYYY-MM-DDTHH:mm:ss")+"Z",
+        certificate_hash: cert_info.hash,
+        certificate_issuer: cert_info.issuer,
+        certificate_serial_number: cert_info.serial_number
+    };
+    const ubl_signature_signed_properties_xml_string_for_signing = defaultUBLExtensionsSignedPropertiesForSigning(signed_properties_props);
+    const ubl_signature_signed_properties_xml_string = defaultUBLExtensionsSignedProperties(signed_properties_props);
+
+    // Get SignedProperties hash
+    const signed_properties_bytes = Buffer.from(ubl_signature_signed_properties_xml_string_for_signing);
+    let signed_properties_hash = createHash("sha256").update(signed_properties_bytes).digest('hex');
+    signed_properties_hash = Buffer.from(signed_properties_hash).toString("base64");
+    console.log(ubl_signature_signed_properties_xml_string_for_signing);
+
+    console.log("Signed properites hash: ", signed_properties_hash);
+
+    // UBL Extensions
+    let ubl_signature_xml_string = defaultUBLExtensions(
+        invoice_hash,
+        signed_properties_hash,
+        digital_signature,
+        cleanUpCertificateString(certificate_string),
+        ubl_signature_signed_properties_xml_string
+    );
+
+    // Set signing elements
+    let unsigned_invoice_str: string = invoice_copy.toString({no_header: false});
+    unsigned_invoice_str = unsigned_invoice_str.replace("SET_UBL_EXTENSIONS_STRING", ubl_signature_xml_string);
+    unsigned_invoice_str = unsigned_invoice_str.replace("SET_QR_CODE_DATA", qr);
+    const signed_invoice: XMLDocument = new XMLDocument(unsigned_invoice_str);
+    
+    // Workaround for fast-xml-parser parsing BigInt to int (scientific notation). And also again those dumb indentations affecting the hash
+    signed_invoice.set("Invoice/ext:UBLExtensions/ext:UBLExtension/ext:ExtensionContent/sig:UBLDocumentSignatures/sac:SignatureInformation/ds:Signature/ds:Object/xades:QualifyingProperties/xades:SignedProperties/xades:SignedSignatureProperties/xades:SigningCertificate/xades:Cert/xades:IssuerSerial", true, {
+        "ds:X509IssuerName": cert_info.issuer,
+        "ds:X509SerialNumber": cert_info.serial_number
+    });
+
+    let signed_invoice_string: string = signed_invoice.toString({no_header: false});
+    signed_invoice_string = signedPropertiesIndentationFix(signed_invoice_string);
+
+    return signed_invoice_string;
+}
+
+
+
+/**
+ * This hurts to do :'(. I hope that it's only temporary and ZATCA decides to just minify the XML before doing any hashing on it.
+ * there is no logical reason why the validation expects an incorrectly indented XML.
+ * Anyway, this is a function that fucks up the indentation in order to match validator hashing.
+ */
+const signedPropertiesIndentationFix = (signed_invoice_string: string): string => {
+    let fixer = signed_invoice_string;
+    let signed_props_lines: string[] = fixer.split("<ds:Object>")[1].split("</ds:Object>")[0].split("\n");
+    let fixed_lines: string[] = [];
+    // Stripping first 4 spaces 
+    signed_props_lines.map((line) => fixed_lines.push(line.slice(4, line.length)));
+    signed_props_lines = signed_props_lines.slice(0, signed_props_lines.length-1);
+    fixed_lines = fixed_lines.slice(0, fixed_lines.length-1);
+
+    fixer = fixer.replace(signed_props_lines.join("\n"), fixed_lines.join("\n"));
+    return fixer;
 }
