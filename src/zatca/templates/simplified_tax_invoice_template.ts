@@ -6,8 +6,8 @@ const template = /* XML */`
     <cbc:ProfileID>NOT_SET</cbc:ProfileID>
     <cbc:ID>NOT_SET</cbc:ID>
     <cbc:UUID>NOT_SET</cbc:UUID>
-    <cbc:IssueDate>NOT_SET</cbc:IssueDate>
-    <cbc:IssueTime>NOT_SET</cbc:IssueTime>
+    <cbc:IssueDate>SET_ISSUE_DATE</cbc:IssueDate>
+    <cbc:IssueTime>SET_ISSUE_TIME</cbc:IssueTime>
     <cbc:InvoiceTypeCode name="0211010">388</cbc:InvoiceTypeCode>
     <cbc:DocumentCurrencyCode>SAR</cbc:DocumentCurrencyCode>
     <cbc:TaxCurrencyCode>SAR</cbc:TaxCurrencyCode>
@@ -53,7 +53,17 @@ const template = /* XML */`
     </cac:InvoiceLine>
 </Invoice>
 `;
-export default function populate(): string {
-    // TODO
-    return template;
+
+export interface ZATCASimplifiedInvoiceProps {
+    issue_date: string,
+    issue_time: string
+}
+
+export default function populate(props: ZATCASimplifiedInvoiceProps): string {
+    let populated_template = template;
+    populated_template = populated_template.replace("SET_ISSUE_DATE", props.issue_date);
+    populated_template = populated_template.replace("SET_ISSUE_TIME", props.issue_time);
+    // TODO: ..
+    // ..
+    return populated_template;
 };
