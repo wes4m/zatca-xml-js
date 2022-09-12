@@ -59,93 +59,36 @@ const template = /* XML */`
       </cac:PartyLegalEntity>
     </cac:Party>
   </cac:AccountingSupplierParty>
-  <cac:AccountingCustomerParty>
-  </cac:AccountingCustomerParty>
-  <cac:PaymentMeans>
-    <cbc:PaymentMeansCode>10</cbc:PaymentMeansCode>
-  </cac:PaymentMeans>
-  <cac:AllowanceCharge>
-    <cbc:ID>1</cbc:ID>
-    <cbc:ChargeIndicator>false</cbc:ChargeIndicator>
-    <cbc:AllowanceChargeReason>discount</cbc:AllowanceChargeReason>
-    <cbc:Amount currencyID="SAR">2</cbc:Amount>
-    <cac:TaxCategory>
-      <cbc:ID schemeAgencyID="6" schemeID="UN/ECE 5305">S</cbc:ID>
-      <cbc:Percent>15</cbc:Percent>
-      <cac:TaxScheme>
-        <cbc:ID schemeAgencyID="6" schemeID="UN/ECE 5153">VAT</cbc:ID>
-      </cac:TaxScheme>
-    </cac:TaxCategory>
-  </cac:AllowanceCharge>
-  <cac:TaxTotal>
-    <cbc:TaxAmount currencyID="SAR">144.9</cbc:TaxAmount>
-    <cac:TaxSubtotal>
-      <cbc:TaxableAmount currencyID="SAR">966</cbc:TaxableAmount>
-      <cbc:TaxAmount currencyID="SAR">144.9</cbc:TaxAmount>
-      <cac:TaxCategory>
-        <cbc:ID schemeAgencyID="6" schemeID="UN/ECE 5305">S</cbc:ID>
-        <cbc:Percent>15</cbc:Percent>
-        <cac:TaxScheme>
-          <cbc:ID schemeAgencyID="6" schemeID="UN/ECE 5153">VAT</cbc:ID>
-        </cac:TaxScheme>
-      </cac:TaxCategory>
-    </cac:TaxSubtotal>
-  </cac:TaxTotal>
-  <cac:TaxTotal>
-    <cbc:TaxAmount currencyID="SAR">144.9</cbc:TaxAmount>
-  </cac:TaxTotal>
-  <cac:LegalMonetaryTotal>
-    <cbc:LineExtensionAmount currencyID="SAR">966</cbc:LineExtensionAmount>
-    <cbc:TaxExclusiveAmount currencyID="SAR">964</cbc:TaxExclusiveAmount>
-    <cbc:TaxInclusiveAmount currencyID="SAR">1108.9</cbc:TaxInclusiveAmount>
-    <cbc:AllowanceTotalAmount currencyID="SAR">2</cbc:AllowanceTotalAmount>
-    <cbc:PrepaidAmount currencyID="SAR">0</cbc:PrepaidAmount>
-    <cbc:PayableAmount currencyID="SAR">1108.9</cbc:PayableAmount>
-  </cac:LegalMonetaryTotal>
-  <cac:InvoiceLine>
-    <cbc:ID>1</cbc:ID>
-    <cbc:InvoicedQuantity unitCode="PCE">44</cbc:InvoicedQuantity>
-    <cbc:LineExtensionAmount currencyID="SAR">966</cbc:LineExtensionAmount>
-    <cac:TaxTotal>
-      <cbc:TaxAmount currencyID="SAR">144.9</cbc:TaxAmount>
-      <cbc:RoundingAmount currencyID="SAR">1110.9</cbc:RoundingAmount>
-    </cac:TaxTotal>
-    <cac:Item>
-      <cbc:Name>dsd</cbc:Name>
-      <cac:ClassifiedTaxCategory>
-        <cbc:ID>S</cbc:ID>
-        <cbc:Percent>15</cbc:Percent>
-        <cac:TaxScheme>
-          <cbc:ID>VAT</cbc:ID>
-        </cac:TaxScheme>
-      </cac:ClassifiedTaxCategory>
-    </cac:Item>
-    <cac:Price>
-      <cbc:PriceAmount currencyID="SAR">22</cbc:PriceAmount>
-      <cac:AllowanceCharge>
-        <cbc:ChargeIndicator>false</cbc:ChargeIndicator>
-        <cbc:AllowanceChargeReason>discount</cbc:AllowanceChargeReason>
-        <cbc:Amount currencyID="SAR">2</cbc:Amount>
-      </cac:AllowanceCharge>
-    </cac:Price>
-  </cac:InvoiceLine>
+  <cac:AccountingCustomerParty></cac:AccountingCustomerParty>
 </Invoice>
 `;
 
 
+export interface ZATCASimplifiedInvoiceLineItemDiscount {
+    amount: number,
+    reason: string
+}
 
+export interface ZATCASimplifiedInvoiceLineItemTax {
+    percent_amount: number,
+    name: string
+}
 
 export interface ZATCASimplifiedInvoiceLineItem {
-    issue_date: string,
-    issue_time: string,
-    previous_invoice_hash: string
+    id: string,
+    name: string,
+    quantity: number,
+    tax_exclusive_price: number,
+    other_taxes?: ZATCASimplifiedInvoiceLineItemTax[],
+    VAT_percent: number
+    discounts?: ZATCASimplifiedInvoiceLineItemDiscount[]
 }
+
 
 export interface ZATCASimplifiedInvoiceProps {
     issue_date: string,
     issue_time: string,
     previous_invoice_hash: string,
-
     line_items?: ZATCASimplifiedInvoiceLineItem[]
 }
 
