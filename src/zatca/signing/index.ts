@@ -34,7 +34,9 @@ export const getPureInvoiceString = (invoice_xml: XMLDocument): string => {
 
 
 /**
- * Hashes Invoice according to ZATCA (TODO RULE NUMBER BUSSINESS TERM)
+ * Hashes Invoice according to ZATCA.
+ * https://zatca.gov.sa/ar/E-Invoicing/SystemsDevelopers/Documents/20220624_ZATCA_Electronic_Invoice_Security_Features_Implementation_Standards.pdf
+ * 2.3.3: Follows same method as PIH (Previous invoice hash BS: KSA-13).
  * @param invoice_xml XMLDocument.
  * @returns String invoice hash encoded in base64.
  */
@@ -48,7 +50,9 @@ export const getInvoiceHash = (invoice_xml: XMLDocument): string => {
 }
 
 /**
- * Hashes Certificate according to ZATCA (TODO RULE NUMBER BUSSINESS TERM)
+ * Hashes Certificate according to ZATCA.
+ * https://zatca.gov.sa/ar/E-Invoicing/SystemsDevelopers/Documents/20220624_ZATCA_Electronic_Invoice_Security_Features_Implementation_Standards.pdf
+ * 1.6.2.1.1.2: used in reference to digital signing certificate.
  * @param certificate_string String base64 encoded certificate body.
  * @returns String certificate hash encoded in base64.
  */
@@ -59,7 +63,9 @@ export const getCertificateHash = (certificate_string: string): string => {
 
 
 /**
- * Creates invoice digital signature according to ZATCA (TODO RULE NUMBER BUSSINESS TERM)
+ * Creates invoice digital signature according to ZATCA.
+ * https://zatca.gov.sa/ar/E-Invoicing/SystemsDevelopers/Documents/20220624_ZATCA_Electronic_Invoice_Security_Features_Implementation_Standards.pdf
+ * 1.4: Digital signature, part of the cryptographic stamp (invoice hash signed using private key) (BS: KSA-15).
  * @param invoice_hash String base64 encoded invoice hash.
  * @param private_key_string String base64 encoded ec-secp256k1 private key body.
  * @returns String base64 encoded digital signature.
@@ -76,7 +82,7 @@ export const createInvoiceDigitalSignature = (invoice_hash: string, private_key_
 }
 
 /**
- * Gets certificate hash, x509IssuerName, and X509SerialNumber and formats them according to ZATCA (TODO RULE NUMBER BUSSINESS TERM)
+ * Gets certificate hash, x509IssuerName, and X509SerialNumber and formats them according to ZATCA.
  * @param certificate_string String base64 encoded certificate body.
  * @returns {hash: string, issuer: string, serial_number: string, public_key: Buffer, signature: Buffer}.
  */
@@ -129,6 +135,18 @@ interface generateSignatureXMLParams {
     certificate_string: string,
     private_key_string: string
 }
+/**
+ * Main signing function.
+ * Signs the invoice according to the following steps:
+ *  - Get the invoice hash
+ *      - Invoice must be cleaned up first before hashing and indentations, trailing lines, spaces must match.
+ *  - Get the certificate hash
+ *      - 
+ * @param invoice_xml XMLDocument of invoice to be signed.
+ * @param certificate_string String signed EC certificate.
+ * @param private_key_string String ec-secp256k1 private key;
+ * @returns 
+ */
 export const generateSignedXMLString = ({invoice_xml, certificate_string, private_key_string}: generateSignatureXMLParams): string => {
 
     const invoice_copy: XMLDocument = new XMLDocument(invoice_xml.toString({no_header: false}));
@@ -165,7 +183,7 @@ export const generateSignedXMLString = ({invoice_xml, certificate_string, privat
     const ubl_signature_signed_properties_xml_string_for_signing = defaultUBLExtensionsSignedPropertiesForSigning(signed_properties_props);
     const ubl_signature_signed_properties_xml_string = defaultUBLExtensionsSignedProperties(signed_properties_props);
 
-    // Get SignedProperties hash
+    // 5: Get SignedProperties hash
     const signed_properties_bytes = Buffer.from(ubl_signature_signed_properties_xml_string_for_signing);
     let signed_properties_hash = createHash("sha256").update(signed_properties_bytes).digest('hex');
     signed_properties_hash = Buffer.from(signed_properties_hash).toString("base64");
