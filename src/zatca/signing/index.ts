@@ -187,8 +187,6 @@ export const generateSignedXMLString = ({invoice_xml, certificate_string, privat
     const signed_properties_bytes = Buffer.from(ubl_signature_signed_properties_xml_string_for_signing);
     let signed_properties_hash = createHash("sha256").update(signed_properties_bytes).digest('hex');
     signed_properties_hash = Buffer.from(signed_properties_hash).toString("base64");
-    console.log(ubl_signature_signed_properties_xml_string_for_signing);
-
     console.log("Signed properites hash: ", signed_properties_hash);
 
     // UBL Extensions

@@ -1,4 +1,5 @@
 import { XMLDocument } from "../parser";
+import { generateSignedXMLString } from "./signing";
 import defaultSimplifiedTaxInvoice, { ZATCASimplifiedInvoiceProps } from "./templates/simplified_tax_invoice_template";
 
 export class ZATCASimplifiedTaxInvoice {
@@ -26,6 +27,21 @@ export class ZATCASimplifiedTaxInvoice {
 
     getXML(): XMLDocument {
         return this.invoice_xml;
+    }
+
+    /**
+     * Signs the invoice.
+     * @param certificate_string String signed EC certificate.
+     * @param private_key_string String ec-secp256k1 private key;
+     * @returns String signed invoice xml, includes QR generation.
+     */
+    sign(certificate_string: string, private_key_string: string): string {
+        const signed_xml_string = generateSignedXMLString({
+            invoice_xml: this.invoice_xml,
+            certificate_string: certificate_string,
+            private_key_string: private_key_string
+        });
+        return signed_xml_string;
     }
 
 }
