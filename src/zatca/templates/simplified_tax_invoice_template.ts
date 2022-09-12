@@ -70,8 +70,7 @@ export interface ZATCASimplifiedInvoiceLineItemDiscount {
 }
 
 export interface ZATCASimplifiedInvoiceLineItemTax {
-    percent_amount: number,
-    name: string
+    percent_amount: number
 }
 
 export interface ZATCASimplifiedInvoiceLineItem {
@@ -80,8 +79,8 @@ export interface ZATCASimplifiedInvoiceLineItem {
     quantity: number,
     tax_exclusive_price: number,
     other_taxes?: ZATCASimplifiedInvoiceLineItemTax[],
-    VAT_percent: number
     discounts?: ZATCASimplifiedInvoiceLineItemDiscount[]
+    VAT_percent: number,
 }
 
 

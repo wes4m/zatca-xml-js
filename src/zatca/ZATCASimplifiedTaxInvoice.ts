@@ -86,7 +86,7 @@ export class ZATCASimplifiedTaxInvoice {
                 "cbc:ID": "S",
                 "cbc:Percent": (tax.percent_amount * 100).toFixed(2),
                 "cac:TaxScheme": {
-                    "cbc:ID": tax.name
+                    "cbc:ID": "VAT"
                 }        
             })
         });
@@ -197,41 +197,67 @@ export class ZATCASimplifiedTaxInvoice {
         }
     }
 
-    private constructTaxTotal = (tax_exclusive_subtotal: number, taxes_total: number, discounts_total: number) => {
+    private constructTaxTotal = (line_items: ZATCASimplifiedInvoiceLineItem[]) => {
+
+        const cacTaxSubtotal: any[] = [];
+        const addTaxSubtotal = (taxable_amount: number, tax_amount: number, tax_percent: number) => {
+            cacTaxSubtotal.push({
+                "cbc:TaxableAmount": {
+                    "@_currencyID": "SAR",
+                    "#text": taxable_amount
+                },
+                "cbc:TaxAmount": {
+                    "@_currencyID": "SAR",
+                    "#text": tax_amount
+                },
+                "cac:TaxCategory": {
+                    "cbc:ID": {
+                        "@_schemeAgencyID": 6,
+                        "@_schemeID": "UN/ECE 5305",
+                        "#text": "S"
+                    },
+                    "cbc:Percent": (tax_percent * 100).toFixed(2),
+                    "cac:TaxScheme": {
+                        "cbc:ID": {
+                            "@_schemeAgencyID": "6",
+                            "@_schemeID": "UN/ECE 5153",
+                            "#text": "VAT"
+                        }
+                    }
+                }
+            });
+        }
+        
+        let taxes_total = 0;
+        line_items.map((line_item) => {
+
+            // TODO check for exemptions
+            const total_line_item_discount = line_item.discounts?.reduce((p, c) => p+c.amount, 0);
+            const taxable_amount = (line_item.tax_exclusive_price * line_item.quantity) - (total_line_item_discount ?? 0);
+
+            let tax_amount = line_item.VAT_percent * taxable_amount;
+            addTaxSubtotal(taxable_amount, tax_amount, line_item.VAT_percent);
+            taxes_total += tax_amount;
+            line_item.other_taxes?.map((tax) => {
+                tax_amount = tax.percent_amount * taxable_amount;
+                addTaxSubtotal(taxable_amount, tax_amount, tax.percent_amount);
+                taxes_total += tax_amount;
+            });
+
+        });
+
 
         // TODO: amount decimals according to ZATCA
         return [
             {
+                // Total tax amount for the full invoice
                 "cbc:TaxAmount": {
                     "@_currencyID": "SAR",
                     "#text": taxes_total
                 },
-                "cac:TaxSubtotal": {
-                    "cbc:TaxableAmount": {
-                        "@_currencyID": "SAR",
-                        "#text": (tax_exclusive_subtotal + discounts_total)
-                    },
-                    "cbc:TaxAmount": {
-                        "@_currencyID": "SAR",
-                        "#text": taxes_total
-                    },
-                    "cac:TaxCategory": {
-                        "cbc:ID": {
-                            "@_schemeAgencyID": 6,
-                            "@_schemeID": "UN/ECE 5305",
-                            "#text": "S"
-                        },
-                        "cbc:Percent": 15, // TODO
-                        "cac:TaxScheme": {
-                            "cbc:ID": {
-                                "@_schemeAgencyID": "6",
-                                "@_schemeID": "UN/ECE 5153",
-                                "#text": "VAT"
-                            }
-                        }
-                    }
-                },
+                "cac:TaxSubtotal": cacTaxSubtotal,
             },
+            // KSA Rule for VAT tax
             {
                 "cbc:TaxAmount": {
                     "@_currencyID": "SAR",
@@ -258,11 +284,7 @@ export class ZATCASimplifiedTaxInvoice {
             invoice_line_items.push(line_item_xml);          
         });
         
-        this.invoice_xml.set("Invoice/cac:TaxTotal", false, this.constructTaxTotal(
-            total_subtotal,
-            total_taxes,
-            total_discounts
-        ));
+        this.invoice_xml.set("Invoice/cac:TaxTotal", false, this.constructTaxTotal(line_items));
 
         this.invoice_xml.set("Invoice/cac:LegalMonetaryTotal", true, this.constructLegalMonetaryTotal(
             total_subtotal,
