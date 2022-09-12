@@ -135,18 +135,14 @@ const template = /* XML */`
 export interface ZATCASimplifiedInvoiceProps {
     issue_date: string,
     issue_time: string,
-    previous_invoice_hash: string,
-    ubl_extensions_xml_string?: string,
-    qr_data?: string
+    previous_invoice_hash: string
 }
 
 export default function populate(props: ZATCASimplifiedInvoiceProps): string {
     let populated_template = template;
-    populated_template = populated_template.replace("SET_UBL_EXTENSIONS_STRING", props.ubl_extensions_xml_string ?? "SET_UBL_EXTENSIONS_STRING");
     populated_template = populated_template.replace("SET_ISSUE_DATE", props.issue_date);
     populated_template = populated_template.replace("SET_ISSUE_TIME", props.issue_time);
     populated_template = populated_template.replace("SET_PREVIOUS_INVOICE_HASH", props.previous_invoice_hash);
-    populated_template = populated_template.replace("SET_QR_CODE_DATA", props.qr_data ?? "SET_QR_CODE_DATA");
     // TODO: Other populateable values ..
 
     return populated_template;
