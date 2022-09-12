@@ -35,13 +35,12 @@ export class ZATCASimplifiedTaxInvoice {
      * @param private_key_string String ec-secp256k1 private key;
      * @returns String signed invoice xml, includes QR generation.
      */
-    sign(certificate_string: string, private_key_string: string): string {
-        const signed_xml_string = generateSignedXMLString({
+    sign(certificate_string: string, private_key_string: string) {
+        return generateSignedXMLString({
             invoice_xml: this.invoice_xml,
             certificate_string: certificate_string,
             private_key_string: private_key_string
         });
-        return signed_xml_string;
     }
 
 }

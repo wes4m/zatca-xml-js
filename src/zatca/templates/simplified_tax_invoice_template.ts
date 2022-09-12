@@ -132,10 +132,21 @@ const template = /* XML */`
 </Invoice>
 `;
 
-export interface ZATCASimplifiedInvoiceProps {
+
+
+
+export interface ZATCASimplifiedInvoiceLineItem {
     issue_date: string,
     issue_time: string,
     previous_invoice_hash: string
+}
+
+export interface ZATCASimplifiedInvoiceProps {
+    issue_date: string,
+    issue_time: string,
+    previous_invoice_hash: string,
+
+    line_items?: ZATCASimplifiedInvoiceLineItem[]
 }
 
 export default function populate(props: ZATCASimplifiedInvoiceProps): string {
