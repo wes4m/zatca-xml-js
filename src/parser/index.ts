@@ -1,6 +1,8 @@
 import { XMLBuilder, XmlBuilderOptions, XMLParser } from "fast-xml-parser";
-import { XMLObject, XMLQueryResult } from "./types";
 import _ from "lodash";
+
+export interface XMLObject {[tag: string]: any};
+export type XMLQueryResult = XMLObject[] | undefined;
 
 export class XMLDocument {
     
