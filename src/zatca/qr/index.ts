@@ -31,6 +31,7 @@ export const generateQR = ({invoice_xml, digital_signature, public_key, certific
     const VAT_number = invoice_xml.get("Invoice/cac:AccountingSupplierParty/cac:Party/cac:PartyTaxScheme/cbc:CompanyID")?.[0].toString();
     const invoice_total = invoice_xml.get("Invoice/cac:LegalMonetaryTotal/cbc:TaxInclusiveAmount")?.[0]["#text"].toString();
     const VAT_total = invoice_xml.get("Invoice/cac:TaxTotal")?.[0]["cbc:TaxAmount"]["#text"].toString();
+    
     const issue_date = invoice_xml.get("Invoice/cbc:IssueDate")?.[0];
     const issue_time = invoice_xml.get("Invoice/cbc:IssueTime")?.[0];
 

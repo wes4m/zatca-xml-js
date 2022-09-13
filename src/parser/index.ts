@@ -1,4 +1,4 @@
-import { XMLBuilder, XMLParser } from "fast-xml-parser";
+import { XMLBuilder, XmlBuilderOptions, XMLParser } from "fast-xml-parser";
 import { XMLObject, XMLQueryResult } from "./types";
 import _ from "lodash";
 
@@ -8,7 +8,8 @@ export class XMLDocument {
     private parser_options = {
         ignoreAttributes: false,
         ignoreDeclaration: false,
-        ignorePiTags: false
+        ignorePiTags: false,
+        parseTagValue: false
     };
 
 
@@ -144,11 +145,12 @@ export class XMLDocument {
     }
 
     toString({no_header}: {no_header?: boolean}) {
-        const builder = new XMLBuilder({
+        let builder_options: Partial<XmlBuilderOptions> = {
             ...this.parser_options,
             format: true,
             indentBy: "    "
-        });
+        };
+        const builder = new XMLBuilder(builder_options);
 
         let xml_str: string = builder.build(this.xml_object);
         if (no_header) xml_str = xml_str.replace(`<?xml version="1.0" encoding="UTF-8"?>`, '');

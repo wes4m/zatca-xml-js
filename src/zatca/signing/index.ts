@@ -151,7 +151,7 @@ export const generateSignedXMLString = ({invoice_xml, certificate_string, privat
 {signed_invoice_string: string, invoice_hash: string} => {
 
     const invoice_copy: XMLDocument = new XMLDocument(invoice_xml.toString({no_header: false}));
-    
+
     // 1: Invoice Hash
     const invoice_hash = getInvoiceHash(invoice_xml);
     console.log("Invoice hash: ", invoice_hash);
@@ -204,12 +204,6 @@ export const generateSignedXMLString = ({invoice_xml, certificate_string, privat
     unsigned_invoice_str = unsigned_invoice_str.replace("SET_UBL_EXTENSIONS_STRING", ubl_signature_xml_string);
     unsigned_invoice_str = unsigned_invoice_str.replace("SET_QR_CODE_DATA", qr);
     const signed_invoice: XMLDocument = new XMLDocument(unsigned_invoice_str);
-    
-    // Workaround for fast-xml-parser parsing BigInt to int (scientific notation). And also again those dumb indentations affecting the hash
-    signed_invoice.set("Invoice/ext:UBLExtensions/ext:UBLExtension/ext:ExtensionContent/sig:UBLDocumentSignatures/sac:SignatureInformation/ds:Signature/ds:Object/xades:QualifyingProperties/xades:SignedProperties/xades:SignedSignatureProperties/xades:SigningCertificate/xades:Cert/xades:IssuerSerial", true, {
-        "ds:X509IssuerName": cert_info.issuer,
-        "ds:X509SerialNumber": cert_info.serial_number
-    });
 
     let signed_invoice_string: string = signed_invoice.toString({no_header: false});
     signed_invoice_string = signedPropertiesIndentationFix(signed_invoice_string);
