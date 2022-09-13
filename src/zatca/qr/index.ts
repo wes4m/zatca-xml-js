@@ -13,7 +13,7 @@ interface QRParams {
 }
 
 /**
- * Generates QR for a given invoice. According to ZATCA (TODO: BUSSINESS TERM RULE)
+ * Generates QR for a given invoice. According to ZATCA BR-KSA-27
  * @param invoice_xml XMLDocument.
  * @param digital_signature String base64 encoded digital signature.
  * @param public_key Buffer certificate public key.

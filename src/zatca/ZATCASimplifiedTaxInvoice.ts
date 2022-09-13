@@ -36,10 +36,8 @@ export class ZATCASimplifiedTaxInvoice {
         let line_item_total_discounts = 0;
         let line_item_total_taxes = 0;
 
-        //  TODO
         let cacAllowanceCharges: any[] = [];
 
-        //  TODO
         let cacClassifiedTaxCategories: any[] = [];
         let cacTaxTotal = {};
 
@@ -231,8 +229,6 @@ export class ZATCASimplifiedTaxInvoice {
         
         let taxes_total = 0;
         line_items.map((line_item) => {
-
-            // TODO check for exemptions
             const total_line_item_discount = line_item.discounts?.reduce((p, c) => p+c.amount, 0);
             const taxable_amount = (line_item.tax_exclusive_price * line_item.quantity) - (total_line_item_discount ?? 0);
 
@@ -244,7 +240,6 @@ export class ZATCASimplifiedTaxInvoice {
                 addTaxSubtotal(taxable_amount, tax_amount, tax.percent_amount);
                 taxes_total += tax_amount;
             });
-
         });
 
 
