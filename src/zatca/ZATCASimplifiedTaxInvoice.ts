@@ -46,11 +46,9 @@ export class ZATCASimplifiedTaxInvoice {
         // VAT
         // BR-KSA-DEC-02
         const VAT = {
-            "cbc:ID": line_item.VAT_percent ? "S" : "E",
+            "cbc:ID": line_item.VAT_percent ? "S" : "O",
             // BT-120, KSA-121
-            // "cbc:TaxExemptionReasonCode" TODO
-            // "cbc:TaxExemptionReason" TODO
-            "cbc:Percent": (line_item.VAT_percent * 100).toFixed(2),
+            "cbc:Percent": line_item.VAT_percent ? (line_item.VAT_percent * 100).toFixed(2) : undefined,
             "cac:TaxScheme": {
                 "cbc:ID": "VAT"
             }
@@ -215,16 +213,18 @@ export class ZATCASimplifiedTaxInvoice {
                     "cbc:ID": {
                         "@_schemeAgencyID": 6,
                         "@_schemeID": "UN/ECE 5305",
-                        "#text": "S"
+                        "#text": tax_percent ? "S" : "O"
                     },
                     "cbc:Percent": (tax_percent * 100).toFixed(2),
+                    // BR-O-10
+                    "cbc:TaxExemptionReason": tax_percent ? undefined : "Not subject to VAT",
                     "cac:TaxScheme": {
                         "cbc:ID": {
                             "@_schemeAgencyID": "6",
                             "@_schemeID": "UN/ECE 5153",
                             "#text": "VAT"
                         }
-                    }
+                    },
                 }
             });
         }
