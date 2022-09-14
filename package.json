@@ -6,6 +6,7 @@
   "devDependencies": {
     "@types/lodash": "^4.14.184",
     "@types/node": "^18.7.16",
+    "@types/uuid": "^8.3.4",
     "@types/xmldom": "^0.1.31",
     "typescript": "^4.8.3"
   },
@@ -14,6 +15,7 @@
     "fast-xml-parser": "^4.0.9",
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
+    "uuid": "^9.0.0",
     "xmldom": "^0.6.0",
     "xmldsigjs": "^2.5.0"
   }
