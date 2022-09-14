@@ -3,7 +3,6 @@ const template = `
 # ------------------------------------------------------------------
 # Default section for "req" command options
 # ------------------------------------------------------------------
-# oid_section = CustomOIDs
 [req]
 
 # Password for reading in existing private key file
@@ -16,13 +15,14 @@ utf8 = no
 # Section pointer for DN field options
 distinguished_name = my_req_dn_prompt
 
-
 # Extensions
 req_extensions = v3_req
 
 [ v3_req ]
-basicConstraints=CA:FALSE
-keyUsage = digitalSignature, keyEncipherment
+#basicConstraints=CA:FALSE
+#keyUsage = digitalSignature, keyEncipherment
+# Production or Testing Template (TSTZATCA-Code-Signing - ZATCA-Code-Signing)
+1.3.6.1.4.1.311.20.2 = ASN1:UTF8String:TSTZATCA-Code-Signing
 subjectAltName=dirName:dir_sect
 
 [ dir_sect ]
@@ -41,7 +41,6 @@ businessCategory = TST
 # Section for prompting DN field values to create "subject"
 # ------------------------------------------------------------------
 [my_req_dn_prompt]
-
 # Common name (EGS TaxPayer PROVIDED ID [FREE TEXT])
 commonName = TST-886431145-312345678900003
 
