@@ -35,8 +35,10 @@ export interface EGSUnitInfo {
 
     private_key?: string,
     csr?: string,
-    certificate?: string,
-    api_secret?: string,
+    compliance_certificate?: string,
+    compliance_api_secret?: string,
+    production_certificate?: string,
+    production_api_secret?: string,
 }
 
 const OpenSSL = (cmd: string[]): Promise<string> => {
@@ -168,23 +170,31 @@ class EGS {
     /**
      * Generates a new compliance certificate through ZATCA API.
      * @param OTP String Tax payer provided from Fatoora portal to link to this EGS.
-     * @returns Promise void on success, throws error on fail.
+     * @returns Promise String compliance request id on success to be used in production CSID request, throws error on fail.
      */
-    async issueComplianceCertificate(OTP: string): Promise<any> {
+    async issueComplianceCertificate(OTP: string): Promise<string> {
         if (!this.egs_info.csr) throw new Error("EGS needs to generate a CSR first.");
 
         const issued_data = await this.api.compliance().issueCertificate(this.egs_info.csr, OTP);
-        this.egs_info.certificate = issued_data.issued_certificate;
-        this.egs_info.api_secret = issued_data.api_secret;
+        this.egs_info.compliance_certificate = issued_data.issued_certificate;
+        this.egs_info.compliance_api_secret = issued_data.api_secret;
+
+        return issued_data.request_id;
     }
 
     /**
      * Generates a new production certificate through ZATCA API.
-     * @param OTP String Tax payer provided from Fatoora portal to link to this EGS.
-     * @returns Promise void on success, throws error on fail.
+     * @param compliance_request_id String compliance request ID generated from compliance CSID request.
+     * @returns Promise String request id on success, throws error on fail.
      */
-     async issueProductionCertificate(OTP: string): Promise<any> {
-        throw ("TODO: Not Implemented");
+     async issueProductionCertificate(compliance_request_id: string): Promise<string> {
+        if(!this.egs_info.compliance_certificate || !this.egs_info.compliance_api_secret) throw new Error("EGS is missing a certificate/private key/api secret to request a production certificate.")
+
+        const issued_data = await this.api.production(this.egs_info.compliance_certificate, this.egs_info.compliance_api_secret).issueCertificate(compliance_request_id);
+        this.egs_info.production_certificate = issued_data.issued_certificate;
+        this.egs_info.production_api_secret = issued_data.api_secret;
+        
+        return issued_data.request_id;
     }
 
     /**
@@ -194,9 +204,9 @@ class EGS {
      * @returns Promise compliance data on success, throws error on fail.
      */
      async checkInvoiceCompliance(signed_invoice_string: string, invoice_hash: string): Promise<any> {
-        if(!this.egs_info.certificate || !this.egs_info.api_secret) throw new Error("EGS is missing a certificate/private key/api secret to check the invoice compliance.")
+        if(!this.egs_info.compliance_certificate || !this.egs_info.compliance_api_secret) throw new Error("EGS is missing a certificate/private key/api secret to check the invoice compliance.")
 
-        return await this.api.compliance(this.egs_info.certificate, this.egs_info.api_secret).checkInvoiceCompliance(
+        return await this.api.compliance(this.egs_info.compliance_certificate, this.egs_info.compliance_api_secret).checkInvoiceCompliance(
             signed_invoice_string,
             invoice_hash,
             this.egs_info.uuid
@@ -207,12 +217,14 @@ class EGS {
     /**
      * Signs a given invoice using the EGS certificate and keypairs.
      * @param invoice Invoice to sign
+     * @param production Boolean production or compliance certificate.
      * @returns Promise void on success, throws error on fail.
      */
-    signInvoice(invoice: ZATCASimplifiedTaxInvoice): {signed_invoice_string: string, invoice_hash: string} {
-        if (!this.egs_info.certificate || !this.egs_info.private_key) throw new Error("EGS is missing a certificate/private key to sign the invoice.");
+    signInvoice(invoice: ZATCASimplifiedTaxInvoice, production?: boolean): {signed_invoice_string: string, invoice_hash: string} {
+        const certificate = production ? this.egs_info.production_certificate : this.egs_info.compliance_certificate;
+        if (!certificate || !this.egs_info.private_key) throw new Error("EGS is missing a certificate/private key to sign the invoice.");
 
-        const {signed_invoice_string, invoice_hash} = invoice.sign(this.egs_info.certificate, this.egs_info.private_key);
+        const {signed_invoice_string, invoice_hash} = invoice.sign(certificate, this.egs_info.private_key);
         console.log("Singed invoice hash: ", invoice_hash);
         fs.writeFileSync("src/tests/attempt_signed.xml", signed_invoice_string);
         return {signed_invoice_string, invoice_hash};

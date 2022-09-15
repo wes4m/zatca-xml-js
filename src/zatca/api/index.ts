@@ -9,15 +9,14 @@ const settings = {
     PRODUCTION_BASEURL: "TODO"
 }
 
-interface APIInterface {
+interface ComplianceAPIInterface {
     /**
      * Requests a new compliance certificate and secret.
      * @param csr String CSR
      * @param otp String Tax payer provided OTP from Fatoora portal
      * @returns issued_certificate: string, api_secret: string, or throws on error.
      */
-    issueCertificate: (csr: string, otp: string) => Promise<{issued_certificate: string, api_secret: string}>
-
+    issueCertificate: (csr: string, otp: string) => Promise<{issued_certificate: string, api_secret: string, request_id: string}>
      /**
      * Checks compliance of a signed ZATCA XML.
      * @param signed_xml_string String.
@@ -27,6 +26,18 @@ interface APIInterface {
      */
     checkInvoiceCompliance: (signed_xml_string: string, invoice_hash: string, egs_uuid: string) => Promise<any>
 }
+
+
+interface ProductionAPIInterface {
+    /**
+     * Requests a new production certificate and secret.
+     * @param compliance_request_id String compliance_request_id
+     * @returns issued_certificate: string, api_secret: string, or throws on error.
+     */
+    issueCertificate: (compliance_request_id: string) => Promise<{issued_certificate: string, api_secret: string, request_id: string}>
+
+}
+
 
 class API {
 
@@ -46,10 +57,10 @@ class API {
         return {};
     }
 
-    compliance(certificate?: string, secret?: string): APIInterface {
+    compliance(certificate?: string, secret?: string): ComplianceAPIInterface {
         const auth_headers = this.getAuthHeaders(certificate, secret);
 
-        const issueCertificate = async (csr: string, otp: string): Promise<{issued_certificate: string, api_secret: string}> => {
+        const issueCertificate = async (csr: string, otp: string): Promise<{issued_certificate: string, api_secret: string, request_id: string}> => {
             const headers = {
                 "Accept-Version": settings.API_VERSION,
                 OTP: otp
@@ -66,7 +77,7 @@ class API {
             issued_certificate = `-----BEGIN CERTIFICATE-----\n${issued_certificate}\n-----END CERTIFICATE-----`;
             const api_secret = response.data.secret;
 
-            return {issued_certificate, api_secret};
+            return {issued_certificate, api_secret, request_id: response.data.requestID};
         }
 
         const checkInvoiceCompliance = async (signed_xml_string: string, invoice_hash: string, egs_uuid: string): Promise<any> => {
@@ -95,20 +106,30 @@ class API {
     }
 
 
-    production(certificate?: string, secret?: string): APIInterface {
-        throw new Error("Not Implemented");
+    production(certificate?: string, secret?: string): ProductionAPIInterface {
+        const auth_headers = this.getAuthHeaders(certificate, secret);
 
-        const issueCertificate = async (csr: string, otp: string): Promise<{issued_certificate: string, api_secret: string}> => {
-            throw new Error("Not Implemented");
-        }
+        const issueCertificate = async (compliance_request_id: string): Promise<{issued_certificate: string, api_secret: string, request_id: string}> => {
+            const headers = {
+                "Accept-Version": settings.API_VERSION
+            };
 
-        const checkInvoiceCompliance = async (signed_xml_string: string, invoice_hash: string, egs_uuid: string): Promise<any> => {
-            throw new Error("Not Implemented");
+            const response = await axios.post(`${settings.SANDBOX_BASEURL}/production/csids`,
+                {compliance_request_id: compliance_request_id},
+                {headers: {...auth_headers, ...headers}}
+            );
+                        
+            if (response.status != 200) throw new Error("Error issuing a production certificate.");
+
+            let issued_certificate = new Buffer(response.data.binarySecurityToken, "base64").toString();
+            issued_certificate = `-----BEGIN CERTIFICATE-----\n${issued_certificate}\n-----END CERTIFICATE-----`;
+            const api_secret = response.data.secret;
+
+            return {issued_certificate, api_secret, request_id: response.data.requestID};
         }
 
         return {
-            issueCertificate,
-            checkInvoiceCompliance
+            issueCertificate
         }
     }
   
