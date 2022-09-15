@@ -11,6 +11,27 @@ import fs from "fs";
 
 import defaultCSRConfig from "../templates/csr_template";
 
+export interface EGSUnitLocation {
+    city: string,
+    city_subdivision: string,
+    street: string,
+    plot_identification: string,
+    building: string,
+    postal_zone: string
+}
+
+export interface EGSUnitInfo {
+    uuid: string,
+    CRN_number: string,
+    VAT_name: string,
+    VAT_number: string,
+    location: EGSUnitLocation,
+
+    private_key?: string,
+    csr?: string,
+    certificate?: string
+}
+
 const OpenSSL = (cmd: string[]): Promise<string> => {
     return new Promise<string>((resolve, reject) => {
         try {
@@ -58,10 +79,7 @@ const generateCSR = async (private_key: string): Promise<string> => {
     fs.writeFileSync(csr_config_file, defaultCSRConfig(
         // TODO
     ));
-
-    console.log(csr_config_file);
     
-
     const cleanUp = () => {
         fs.unlink(private_key_file, ()=>{});
         fs.unlink(csr_config_file, ()=>{});
@@ -80,13 +98,42 @@ const generateCSR = async (private_key: string): Promise<string> => {
     }
 }
 
-export const generateKeysAndCSR = async () => {
 
-    const private_key = await generateSecp256k1KeyPair();
-    console.log(private_key);
 
-    const csr = await generateCSR(private_key);
-    console.log(csr);
+
+class EGS {
+
+    private egs_info: EGSUnitInfo;
+    constructor(egs_info: EGSUnitInfo) {
+        this.egs_info = egs_info;
+    }
+
+
+    get() {
+        return this.egs_info;
+    }
+
+    /**
+     * Generates a new secp256k1 Public/Private key pair for the EGS.
+     * Also generates and signs a new CSR.
+     * @returns void on success, throws error on fail.
+     */
+    async generateNewKeysAndCSR(): Promise<any> {
+        try {
+            const new_private_key = await generateSecp256k1KeyPair();
+            const new_csr = await generateCSR(new_private_key);
     
+            this.egs_info.private_key = new_private_key;
+            this.egs_info.csr = new_csr;
+
+            return;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+
 
 }
+
+export default EGS;

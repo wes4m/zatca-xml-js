@@ -1,4 +1,4 @@
-import { EGSUnitInfo } from "../egs/types";
+import { EGSUnitInfo } from "../egs";
 
 /**
  * Maybe use a templating engine instead of str replace.
