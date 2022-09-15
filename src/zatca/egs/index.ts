@@ -109,6 +109,9 @@ class EGS {
     }
 
 
+    /**
+     * @returns EGSUnitInfo
+     */
     get() {
         return this.egs_info;
     }
@@ -116,7 +119,8 @@ class EGS {
     /**
      * Generates a new secp256k1 Public/Private key pair for the EGS.
      * Also generates and signs a new CSR.
-     * @returns void on success, throws error on fail.
+     * `Note`: This functions uses OpenSSL thus requires it to be installed on whatever system the package is running in.
+     * @returns Promise void on success, throws error on fail.
      */
     async generateNewKeysAndCSR(): Promise<any> {
         try {
