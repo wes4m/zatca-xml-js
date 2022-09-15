@@ -21,7 +21,7 @@ export class ZATCASimplifiedTaxInvoice {
             this.invoice_xml = new XMLDocument(defaultSimplifiedTaxInvoice(props));
 
             // Parsing
-            this.parseLineItems(props.line_items ?? []);
+            this.parseLineItems(props.line_items ?? [], props);
 
         }
 
@@ -258,9 +258,8 @@ export class ZATCASimplifiedTaxInvoice {
         ];
     }
 
-    private parseLineItems(line_items: ZATCASimplifiedInvoiceLineItem[]) {
+    private parseLineItems(line_items: ZATCASimplifiedInvoiceLineItem[], props: ZATCASimplifiedInvoiceProps) {
         
-        let total_discounts: number = 0;
         let total_taxes: number = 0;
         let total_subtotal: number = 0;
 
@@ -268,12 +267,21 @@ export class ZATCASimplifiedTaxInvoice {
         line_items.map((line_item) => {
             
             const {line_item_xml, line_item_totals} = this.constructLineItem(line_item);
-            total_discounts += line_item_totals.discounts_total;
             total_taxes += line_item_totals.taxes_total;
             total_subtotal += line_item_totals.subtotal;
 
             invoice_line_items.push(line_item_xml);          
         });
+        
+
+        if(props.cancelation) {
+            // Invoice canceled. Make it a credit/debit note
+            // BR-KSA-17
+            this.invoice_xml.set("Invoice/cac:PaymentMeans", false, {
+                "cbc:PaymentMeansCode": props.cancelation.payment_method,
+                "cbc:InstructionNote": props.cancelation.reason ?? "No note Specified"
+            });
+        }
         
         this.invoice_xml.set("Invoice/cac:TaxTotal", false, this.constructTaxTotal(line_items));
 

@@ -1,4 +1,5 @@
 import { EGSUnitInfo } from "../egs";
+import defaultBillingReference from "./invoice_billing_reference_template";
 
 /**
  * Maybe use a templating engine instead of str replace.
@@ -17,9 +18,10 @@ const template = /* XML */`
     <cbc:UUID>SET_TERMINAL_UUID</cbc:UUID>
     <cbc:IssueDate>SET_ISSUE_DATE</cbc:IssueDate>
     <cbc:IssueTime>SET_ISSUE_TIME</cbc:IssueTime>
-    <cbc:InvoiceTypeCode name="0211010">388</cbc:InvoiceTypeCode>
+    <cbc:InvoiceTypeCode name="0211010">SET_INVOICE_TYPE</cbc:InvoiceTypeCode>
     <cbc:DocumentCurrencyCode>SAR</cbc:DocumentCurrencyCode>
     <cbc:TaxCurrencyCode>SAR</cbc:TaxCurrencyCode>
+    SET_BILLING_REFERENCE
     <cac:AdditionalDocumentReference>
         <cbc:ID>ICV</cbc:ID>
         <cbc:UUID>SET_INVOICE_COUNTER_NUMBER</cbc:UUID>
@@ -71,6 +73,19 @@ const template = /* XML */`
 </Invoice>
 `;
 
+// 11.2.5 Payment means type code
+export enum ZATCAPaymentMethods {
+    CASH="10",
+    CREDIT="30",
+    BANK_ACCOUNT="42",
+    BANK_CARD="48"
+}
+
+export enum ZATCAInvoiceTypes{
+    INVOICE="388",
+    DEBIT_NOTE="383",
+    CREDIT_NOTE="381"
+}
 
 export interface ZATCASimplifiedInvoiceLineItemDiscount {
     amount: number,
@@ -91,6 +106,12 @@ export interface ZATCASimplifiedInvoiceLineItem {
     VAT_percent: number,
 }
 
+export interface ZATCASimplifiedInvoicCancelation{
+    canceled_invoice_number: number,
+    payment_method: ZATCAPaymentMethods,
+    reason: string
+}
+
 export interface ZATCASimplifiedInvoiceProps {
     egs_info: EGSUnitInfo,
     invoice_counter_number: number,
@@ -99,10 +120,22 @@ export interface ZATCASimplifiedInvoiceProps {
     issue_time: string,
     previous_invoice_hash: string,
     line_items?: ZATCASimplifiedInvoiceLineItem[],
+    cancelation?: ZATCASimplifiedInvoicCancelation
 }
 
 export default function populate(props: ZATCASimplifiedInvoiceProps): string {
     let populated_template = template;
+
+    // TODO Debit or Credit selection
+    populated_template = populated_template.replace("SET_INVOICE_TYPE", props.cancelation ? ZATCAInvoiceTypes.CREDIT_NOTE : ZATCAInvoiceTypes.INVOICE);
+    // if canceled (BR-KSA-56) set reference number to canceled invoice
+    if(props.cancelation) {
+        populated_template = populated_template.replace("SET_BILLING_REFERENCE", defaultBillingReference(props.cancelation.canceled_invoice_number));
+    } else {
+        populated_template = populated_template.replace("SET_BILLING_REFERENCE", "");
+    }
+
+
     populated_template = populated_template.replace("SET_INVOICE_SERIAL_NUMBER", props.invoice_serial_number);
     populated_template = populated_template.replace("SET_TERMINAL_UUID", props.egs_info.uuid);
     populated_template = populated_template.replace("SET_ISSUE_DATE", props.issue_date);
