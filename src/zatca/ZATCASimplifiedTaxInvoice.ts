@@ -25,8 +25,6 @@ export class ZATCASimplifiedTaxInvoice {
 
         }
 
-        // TODO: Validate Invoice
-        // ..
     }
 
     private constructLineItemTotals = (line_item: ZATCASimplifiedInvoiceLineItem) => {
@@ -120,8 +118,6 @@ export class ZATCASimplifiedTaxInvoice {
             line_item_total_discounts
         } = this.constructLineItemTotals(line_item);
 
-        // TODO: decimal fixing according to ZATCA
-        //  .. TODO
         return {
                 line_item_xml: {
                     //  .. TODO
@@ -242,8 +238,6 @@ export class ZATCASimplifiedTaxInvoice {
             });
         });
 
-
-        // TODO: amount decimals according to ZATCA
         // BR-DEC-13, MESSAGE : [BR-DEC-13]-The allowed maximum number of decimals for the Invoice total VAT amount (BT-110) is 2.
         return [
             {

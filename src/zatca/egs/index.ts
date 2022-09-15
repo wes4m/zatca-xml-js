@@ -33,7 +33,8 @@ export interface EGSUnitInfo {
 
     private_key?: string,
     csr?: string,
-    certificate?: string
+    certificate?: string,
+    api_secret?: string,
 }
 
 const OpenSSL = (cmd: string[]): Promise<string> => {
@@ -129,6 +130,14 @@ class EGS {
      */
     get() {
         return this.egs_info;
+    }
+
+    /**
+     * Sets/Updates an EGS info field.
+     * @param egs_info Partial<EGSUnitInfo>
+     */
+    set(egs_info: Partial<EGSUnitInfo>) {
+        this.egs_info = {...this.egs_info, ...egs_info};
     }
 
     /**
