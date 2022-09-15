@@ -199,7 +199,7 @@ class EGS {
 
     /**
      * Checks Invoice compliance with ZATCA API.
-     * @param signed_invoice_string String Tax payer provided from Fatoora portal to link to this EGS.
+     * @param signed_invoice_string String.
      * @param invoice_hash String.
      * @returns Promise compliance data on success, throws error on fail.
      */
@@ -215,6 +215,22 @@ class EGS {
 
 
     /**
+     * Reports invoice with ZATCA API.
+     * @param signed_invoice_string String.
+     * @param invoice_hash String.
+     * @returns Promise reporting data on success, throws error on fail.
+     */
+    async reportInvoice(signed_invoice_string: string, invoice_hash: string): Promise<any> {
+        if(!this.egs_info.production_certificate || !this.egs_info.production_api_secret) throw new Error("EGS is missing a certificate/private key/api secret to report the invoice.")
+
+        return await this.api.production(this.egs_info.production_certificate, this.egs_info.production_api_secret).reportInvoice(
+            signed_invoice_string,
+            invoice_hash,
+            this.egs_info.uuid
+        );
+    }
+
+    /**
      * Signs a given invoice using the EGS certificate and keypairs.
      * @param invoice Invoice to sign
      * @param production Boolean production or compliance certificate.
@@ -225,8 +241,6 @@ class EGS {
         if (!certificate || !this.egs_info.private_key) throw new Error("EGS is missing a certificate/private key to sign the invoice.");
 
         const {signed_invoice_string, invoice_hash} = invoice.sign(certificate, this.egs_info.private_key);
-        console.log("Singed invoice hash: ", invoice_hash);
-        fs.writeFileSync("src/tests/attempt_signed.xml", signed_invoice_string);
         return {signed_invoice_string, invoice_hash};
     }
 
