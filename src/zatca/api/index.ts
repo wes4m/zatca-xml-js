@@ -60,7 +60,7 @@ class API {
                 {headers: {...auth_headers, ...headers}}
             );
                         
-            if (response.status != 200) throw ("Error issuing a compliance certificate.");
+            if (response.status != 200) throw new Error("Error issuing a compliance certificate.");
 
             let issued_certificate = new Buffer(response.data.binarySecurityToken, "base64").toString();
             issued_certificate = `-----BEGIN CERTIFICATE-----\n${issued_certificate}\n-----END CERTIFICATE-----`;
@@ -84,7 +84,7 @@ class API {
                 {headers: {...auth_headers, ...headers}}
             );
                         
-            if (response.status != 200) throw ("Error in compliance check.");
+            if (response.status != 200) throw new Error("Error in compliance check.");
             return response.data;
         }
         
@@ -96,14 +96,14 @@ class API {
 
 
     production(certificate?: string, secret?: string): APIInterface {
-        throw ("Not Implemented");
+        throw new Error("Not Implemented");
 
         const issueCertificate = async (csr: string, otp: string): Promise<{issued_certificate: string, api_secret: string}> => {
-            throw ("Not Implemented");
+            throw new Error("Not Implemented");
         }
 
         const checkInvoiceCompliance = async (signed_xml_string: string, invoice_hash: string, egs_uuid: string): Promise<any> => {
-            throw ("Not Implemented");
+            throw new Error("Not Implemented");
         }
 
         return {
