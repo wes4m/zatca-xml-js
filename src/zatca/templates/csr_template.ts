@@ -55,18 +55,6 @@ countryName = SA
 `;
 
 
-
-
-// csr.common.name=TST-886431145-312345678900003
-// csr.serial.number=1-TST|2-TST|3-ed22f1d8-e6a2-1118-9b58-d9a8f11e445f
-// csr.organization.identifier=312345678900003
-// csr.organization.unit.name=3123456789
-// csr.organization.name=3123456789
-// csr.country.name=SA
-// csr.invoice.type=1111
-// csr.location.address=TST
-// csr.industry.business.category=TST
-
 interface CSRConfigProps {
     private_key_pass?: string,
     production?: boolean,
