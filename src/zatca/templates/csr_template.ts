@@ -22,39 +22,36 @@ req_extensions = v3_req
 #basicConstraints=CA:FALSE
 #keyUsage = digitalSignature, keyEncipherment
 # Production or Testing Template (TSTZATCA-Code-Signing - ZATCA-Code-Signing)
-1.3.6.1.4.1.311.20.2 = ASN1:UTF8String:TSTZATCA-Code-Signing
+1.3.6.1.4.1.311.20.2 = ASN1:UTF8String:SET_PRODUCTION_VALUE
 subjectAltName=dirName:dir_sect
 
 [ dir_sect ]
 # EGS Serial number (1-SolutionName|2-ModelOrVersion|3-serialNumber)
-SN = 1-TST|2-TST|3-ed22f1d8-e6a2-1118-9b58-d9a8f11e445f
+SN = SET_EGS_SERIAL_NUMBER
 # VAT Registration number of TaxPayer (Organization identifier [15 digits begins with 3 and ends with 3])
-UID = 312345678900003
+UID = SET_VAT_REGISTRATION_NUMBER
 # Invoice type (TSCZ)(1 = supported, 0 not supported) (Tax, Simplified, future use, future use)
 title = 0100
 # Location (branch address or website)
-registeredAddress = TST
+registeredAddress = SET_BRANCH_LOCATION
 # Industry (industry sector name)
-businessCategory = TST
+businessCategory = SET_BRANCH_INDUSTRY
 
 # ------------------------------------------------------------------
 # Section for prompting DN field values to create "subject"
 # ------------------------------------------------------------------
 [my_req_dn_prompt]
 # Common name (EGS TaxPayer PROVIDED ID [FREE TEXT])
-commonName = TST-886431145-312345678900003
+commonName = SET_COMMON_NAME
 
 # Organization Unit (Branch name)
-organizationalUnitName = TST TAXPAYER BRANCH NAME
+organizationalUnitName = SET_BRANCH_NAME
 
 # Organization name (Tax payer name)
-organizationName = TST TAXPAYER NAME
+organizationName = SET_TAXPAYER_NAME
 
 # ISO2 country code is required with US as default
 countryName = SA
-
-
-
 `;
 
 
@@ -70,10 +67,31 @@ countryName = SA
 // csr.location.address=TST
 // csr.industry.business.category=TST
 
+interface CSRConfigProps {
+    private_key_pass?: string,
+    production?: boolean,
+    egs_model: string,
+    egs_serial_number: string,
+    solution_name: string,
+    vat_number: string,
+    branch_location: string,
+    branch_industry: string,
+    branch_name: string,
+    taxpayer_name: string,
+    taxpayer_provided_id: string
 
-export default function populate(): string {
+}
+export default function populate(props: CSRConfigProps): string {
     let populated_template = template;
-    // populated_template = populated_template.replace("SET_SIGN_TIMESTAMP", sign_timestamp);
-    // TODO ..
+    populated_template = populated_template.replace("SET_PRIVATE_KEY_PASS", props.private_key_pass ?? "SET_PRIVATE_KEY_PASS");
+    populated_template = populated_template.replace("SET_PRODUCTION_VALUE", props.production ? "ZATCA-Code-Signing" : "TSTZATCA-Code-Signing");
+    populated_template = populated_template.replace("SET_EGS_SERIAL_NUMBER", `1-${props.solution_name}|2-${props.egs_model}|3-${props.egs_serial_number}`);
+    populated_template = populated_template.replace("SET_VAT_REGISTRATION_NUMBER", props.vat_number);
+    populated_template = populated_template.replace("SET_BRANCH_LOCATION", props.branch_location);
+    populated_template = populated_template.replace("SET_BRANCH_INDUSTRY", props.branch_industry);
+    populated_template = populated_template.replace("SET_COMMON_NAME", props.taxpayer_provided_id);
+    populated_template = populated_template.replace("SET_BRANCH_NAME", props.branch_name);
+    populated_template = populated_template.replace("SET_TAXPAYER_NAME", props.taxpayer_name);
+
     return populated_template;
 };

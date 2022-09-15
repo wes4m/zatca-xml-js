@@ -22,9 +22,13 @@ export interface EGSUnitLocation {
 
 export interface EGSUnitInfo {
     uuid: string,
+    custom_id: string,
+    model: string,
     CRN_number: string,
     VAT_name: string,
     VAT_number: string,
+    branch_name: string,
+    branch_industry: string,
     location: EGSUnitLocation,
 
     private_key?: string,
@@ -69,16 +73,27 @@ const generateSecp256k1KeyPair = async (): Promise<string> => {
 
 // Generate a signed ecdsaWithSHA256 CSR
 // 2.2.2 Profile specification of the Cryptographic Stamp identifiers. & CSR field contents / RDNs.
-const generateCSR = async (private_key: string): Promise<string> => {
+const generateCSR = async (egs_info: EGSUnitInfo, production: boolean): Promise<string> => {
+    if (!egs_info.private_key) throw "EGS has no private key";
+
     // This creates a temporary private file, and csr config file to pass to OpenSSL in order to create and sign the CSR.
     // * In terms of security, this is very bad as /tmp can be accessed by all users. a simple watcher by unauthorized user can retrieve the keys.
     // Better change it to some protected dir.
     const private_key_file = `/tmp/${uuidv4()}.pem`;
     const csr_config_file = `/tmp/${uuidv4()}.cnf`;
-    fs.writeFileSync(private_key_file, private_key);
-    fs.writeFileSync(csr_config_file, defaultCSRConfig(
-        // TODO
-    ));
+    fs.writeFileSync(private_key_file, egs_info.private_key);
+    fs.writeFileSync(csr_config_file, defaultCSRConfig({
+        egs_model: egs_info.model,
+        egs_serial_number: egs_info.uuid,
+        solution_name: "TODONAME",
+        vat_number: egs_info.VAT_number,
+        branch_location: `${egs_info.location.building} ${egs_info.location.street}, ${egs_info.location.city}`,
+        branch_industry: egs_info.branch_industry,
+        branch_name: egs_info.branch_name,
+        taxpayer_name: egs_info.VAT_name,
+        taxpayer_provided_id: egs_info.custom_id,
+        production: production
+    }));
     
     const cleanUp = () => {
         fs.unlink(private_key_file, ()=>{});
@@ -120,14 +135,15 @@ class EGS {
      * Generates a new secp256k1 Public/Private key pair for the EGS.
      * Also generates and signs a new CSR.
      * `Note`: This functions uses OpenSSL thus requires it to be installed on whatever system the package is running in.
+     * @param Boolean Production CSR or Compliance CSR
      * @returns Promise void on success, throws error on fail.
      */
-    async generateNewKeysAndCSR(): Promise<any> {
+    async generateNewKeysAndCSR(production: boolean): Promise<any> {
         try {
             const new_private_key = await generateSecp256k1KeyPair();
-            const new_csr = await generateCSR(new_private_key);
-    
             this.egs_info.private_key = new_private_key;
+
+            const new_csr = await generateCSR(this.egs_info, production);    
             this.egs_info.csr = new_csr;
 
             return;
