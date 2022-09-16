@@ -121,7 +121,7 @@ const generateCSR = async (egs_info: EGSUnitInfo, production: boolean): Promise<
 
 
 
-class EGS {
+export class EGS {
 
     private egs_info: EGSUnitInfo;
     private api: API;
@@ -249,5 +249,3 @@ class EGS {
 
 
 }
-
-export default EGS;

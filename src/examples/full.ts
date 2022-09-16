@@ -1,4 +1,4 @@
-import EGS, { EGSUnitInfo } from "../zatca/egs";
+import { EGS, EGSUnitInfo } from "../zatca/egs";
 import { ZATCASimplifiedInvoiceLineItem } from "../zatca/templates/simplified_tax_invoice_template";
 import { ZATCASimplifiedTaxInvoice } from "../zatca/ZATCASimplifiedTaxInvoice";
 
