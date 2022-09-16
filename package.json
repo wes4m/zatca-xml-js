@@ -1,6 +1,6 @@
 {
   "name": "zatca-xml-js",
-  "version": "0.10",
+  "version": "0.1.0",
   "description": "An implementation of Saudi Arabia ZATCA's E-Invocing requirements, processes, and standards.",
   "main": "lib/index.js",
   "files": ["lib/**/*"],
