@@ -1,7 +1,7 @@
 <div align="center">
   <br/>
   <img src="./docs/logo.png"/>
-  <p>v0.1 (experimental)</p>
+  <p>v0.10 (experimental)</p>
   <br/>
   <br/>
   <p>
