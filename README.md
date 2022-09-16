@@ -1,6 +1,6 @@
 <div align="center">
   <br/>
-  <img src="./docs/logo copy.png"/>
+  <img src="./docs/logo.png"/>
   <p>v0.1 (experimental)</p>
   <br/>
   <br/>
@@ -12,7 +12,7 @@
   <br/>
   <p>
   
-[![GitHub license](https://badgen.net/github/license/wes4m/vheap)](https://github.com/wes4m/zatca-xml-js/blob/main/LICENSE)
+[![GitHub license](https://badgen.net/github/license/wes4m/zatca-xml-js)](https://github.com/wes4m/zatca-xml-js/blob/main/LICENSE)
     <a href="https://github.com/wes4m">
         <img src="https://img.shields.io/badge/maintainer-wes4m-blue"/>
     </a>
