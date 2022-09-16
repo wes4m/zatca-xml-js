@@ -44,7 +44,7 @@ npm install zatca-xml-js
 ```
 
 # Usage
-View full example at <a href="/examples">examples</a>
+View full example at <a href="/src/examples">examples</a>
 ```typescript
 import {
     EGS, EGSUnitInfo,
