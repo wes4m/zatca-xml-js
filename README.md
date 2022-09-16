@@ -46,7 +46,11 @@ npm install zatca-xml-js
 # Usage
 View full example at <a href="/examples">examples</a>
 ```typescript
-import * from "zatca-xml-js";
+import {
+    EGS, EGSUnitInfo,
+    ZATCASimplifiedTaxInvoice,
+} from "zatca-xml-js";
+
 
 // New Invoice and EGS Unit
 const invoice: ZATCASimplifiedTaxInvoice = {/*...*/};
