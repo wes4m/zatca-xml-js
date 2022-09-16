@@ -12,12 +12,12 @@
   <br/>
   <p>
   
-[![GitHub license](https://badgen.net/github/license/wes4m/zatca-xml-js)](https://github.com/wes4m/zatca-xml-js/blob/main/LICENSE)
+[![GitHub license](https://badgen.net/github/license/wes4m/zatca-xml-js?v=0.1.0)](https://github.com/wes4m/zatca-xml-js/blob/main/LICENSE)
     <a href="https://github.com/wes4m">
         <img src="https://img.shields.io/badge/maintainer-wes4m-blue"/>
     </a>
     <a href="https://badge.fury.io/js/zatca-xml-js">
-      <img src="https://badge.fury.io/js/zatca-xml-js.svg"/>
+      <img src="https://badge.fury.io/js/zatca-xml-js.svg/?v=0.1.0"/>
     </a>
   </p>
 </div>
