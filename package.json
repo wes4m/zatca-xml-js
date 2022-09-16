@@ -1,8 +1,14 @@
 {
+  "name": "zatca-xml-js",
+  "version": "0.10",
+  "description": "An implementation of Saudi Arabia ZATCA's E-Invocing requirements, processes, and standards.",
+  "main": "lib/index.js",
+  "files": ["lib/**/*"],
   "scripts": {
-    "build": "tsc",
-    "test": "tsc && node lib/tests/test.js",
-    "example": "tsc && node lib/examples/full.js"
+    "build": "tsc --project tsconfig.build.json",
+    "test": "tsc && node testing_lib/tests/test.js",
+    "example": "tsc && node lib/examples/full.js",
+    "prepare": "npm run build"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.184",
@@ -20,5 +26,24 @@
     "uuid": "^9.0.0",
     "xmldom": "^0.6.0",
     "xmldsigjs": "^2.5.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wes4m/zatca-xml-js"
+  },
+  "typings": "lib/index.d.ts",
+  "keywords": [
+    "zatca",
+    "xml",
+    "signing",
+    "on-boarding",
+    "EGS",
+    "invoice",
+    "tax",
+    "simplified",
+    "api",
+    "saudi arabia"
+  ],
+  "author": "Wesam Alzahir (https://wes4m.io/)",
+  "license": "MIT"
 }

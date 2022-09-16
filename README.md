@@ -1,6 +1,6 @@
 <div align="center">
   <br/>
-  <b style="font-size: 28px; color: #489bc8">ZATCA-XML-JS</b>
+  <img src="./docs/logo copy.png"/>
   <p>v0.1 (experimental)</p>
   <br/>
   <br/>
@@ -11,11 +11,13 @@
   <br/>
   <br/>
   <p>
-    <a href="https://openbase.com/js/bullmq?utm_source=embedded&utm_medium=badge&utm_campaign=rate-badge">
-      <img src="https://badges.openbase.com/js/rating/bullmq.svg"/>
+  
+[![GitHub license](https://badgen.net/github/license/wes4m/vheap)](https://github.com/wes4m/zatca-xml-js/blob/main/LICENSE)
+    <a href="https://github.com/wes4m">
+        <img src="https://img.shields.io/badge/maintainer-wes4m-blue"/>
     </a>
-    <a href="https://badge.fury.io/js/bullmq">
-      <img src="https://badge.fury.io/js/bullmq.svg"/>
+    <a href="https://badge.fury.io/js/zatca-xml-js">
+      <img src="https://badge.fury.io/js/zatca-xml-js.svg"/>
     </a>
   </p>
 </div>
@@ -42,54 +44,28 @@ npm install zatca-xml-js
 ```
 
 # Usage
-View <a href="/examples">examples</a>
+View full example at <a href="/examples">examples</a>
 ```typescript
-import {
-    EGS,
-    EGSUnitInfo,
-    ZATCASimplifiedTaxInvoice
-} from "zatca-xml-js";
+import * from "zatca-xml-js";
 
+// New Invoice and EGS Unit
+const invoice: ZATCASimplifiedTaxInvoice = {/*...*/};
+const egsunit: EGSUnitInfo = {/*...*/};
 
-// Sample Invoice
-const invoice = new ZATCASimplifiedTaxInvoice({
-    props: {
-        egs_info: egsunit,
-        invoice_counter_number: 1,
-        invoice_serial_number: "EGS1-123456789-1",
-        issue_date: "2022-09-01",
-        issue_time: "13:30:30",
-        previous_invoice_hash: "Previous invoice hash",
-        line_items: [
-            line_item,
-            line_item,
-            line_item
-        ]
-    }
-});
-
-
-const main = async () => {
-    try {
-        // Init a new EGS
-        const egs = new EGS(egsunit);
-        // New Keys & CSR for the EGS
-        await egs.generateNewKeysAndCSR(false);
-        // Issue a new compliance cert for the EGS
-        const compliance_request_id = await egs.issueComplianceCertificate("123345");
-        // Sign invoice
-        const {signed_invoice_string, invoice_hash} = egs.signInvoice(invoice);
-        // Check invoice compliance
-        await egs.checkInvoiceCompliance(signed_invoice_string, invoice_hash);
-        // Issue production certificate
-        await egs.issueProductionCertificate(compliance_request_id);
-         // Report invoice production
-        await egs.reportInvoice(signed_invoice_string, invoice_hash);
-
-    } catch (error: any) {
-        console.log(error.message ?? error);
-    }
-}
+// Init EGS unit
+const egs = new EGS(egsunit);
+// New Keys & CSR for the EGS
+await egs.generateNewKeysAndCSR(false);
+// Issue a new compliance cert for the EGS
+const compliance_rid = await egs.issueComplianceCertificate("123345");
+// Sign invoice
+const {signed_invoice_string, invoice_hash} = egs.signInvoice(invoice);
+// Check invoice compliance
+await egs.checkInvoiceCompliance(signed_invoice_string, invoice_hash);
+// Issue production certificate
+await egs.issueProductionCertificate(compliance_rid);
+// Report invoice
+await egs.reportInvoice(signed_invoice_string, invoice_hash);
 ```
 
 # Implementation
