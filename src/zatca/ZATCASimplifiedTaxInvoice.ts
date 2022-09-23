@@ -34,8 +34,6 @@ export class ZATCASimplifiedTaxInvoice {
     }
 
     private constructLineItemTotals = (line_item: ZATCASimplifiedInvoiceLineItem) => {
-        
-        // TODO: decimal fixing according to ZATCA
 
         let line_item_total_discounts = 0;
         let line_item_total_taxes = 0;
@@ -126,32 +124,25 @@ export class ZATCASimplifiedTaxInvoice {
 
         return {
                 line_item_xml: {
-                    //  .. TODO
                     "cbc:ID": line_item.id,
-                    //  .. TODO
                     "cbc:InvoicedQuantity": {
                         "@_unitCode": "PCE",
                         "#text": line_item.quantity
                     },
-                    //  .. TODO
                     "cbc:LineExtensionAmount": {
                         "@_currencyID": "SAR",
                         "#text": line_item_total_tax_exclusive
                     },
-                    //  .. TODO
                     "cac:TaxTotal": cacTaxTotal,
-                    //  .. TODO
                     "cac:Item": {
                         "cbc:Name": line_item.name,
                         "cac:ClassifiedTaxCategory": cacClassifiedTaxCategories
                     },
-                    //  .. TODO
                     "cac:Price": {
                         "cbc:PriceAmount": {
                             "@_currencyID": "SAR",
                             "#text": line_item.tax_exclusive_price
                         },
-                        //  .. TODO
                         "cac:AllowanceCharge": cacAllowanceCharges
                     }
                 },
@@ -166,7 +157,6 @@ export class ZATCASimplifiedTaxInvoice {
 
     private constructLegalMonetaryTotal = (tax_exclusive_subtotal: number, taxes_total: number) => {
 
-        // TODO: amount decimals according to ZATCA
         return {
             "cbc:LineExtensionAmount": {
                 "@_currencyID": "SAR",
