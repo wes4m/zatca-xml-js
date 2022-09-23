@@ -1,6 +1,5 @@
 import axios from "axios";
 import { cleanUpCertificateString } from "../signing";
-import { ZATCASimplifiedTaxInvoice } from "../ZATCASimplifiedTaxInvoice";
 
 
 const settings = {

@@ -63,7 +63,7 @@ const main = async () => {
         const egs = new EGS(egsunit);
 
         // New Keys & CSR for the EGS
-        await egs.generateNewKeysAndCSR(false);
+        await egs.generateNewKeysAndCSR(false, "solution_name");
 
         // Issue a new compliance cert for the EGS
         const compliance_request_id = await egs.issueComplianceCertificate("123345");

@@ -109,6 +109,7 @@ export interface ZATCASimplifiedInvoiceLineItem {
 export interface ZATCASimplifiedInvoicCancelation{
     canceled_invoice_number: number,
     payment_method: ZATCAPaymentMethods,
+    cancelation_type: ZATCAInvoiceTypes,
     reason: string
 }
 
@@ -126,8 +127,7 @@ export interface ZATCASimplifiedInvoiceProps {
 export default function populate(props: ZATCASimplifiedInvoiceProps): string {
     let populated_template = template;
 
-    // TODO Debit or Credit selection
-    populated_template = populated_template.replace("SET_INVOICE_TYPE", props.cancelation ? ZATCAInvoiceTypes.CREDIT_NOTE : ZATCAInvoiceTypes.INVOICE);
+    populated_template = populated_template.replace("SET_INVOICE_TYPE", props.cancelation ? props.cancelation.cancelation_type : ZATCAInvoiceTypes.INVOICE);
     // if canceled (BR-KSA-56) set reference number to canceled invoice
     if(props.cancelation) {
         populated_template = populated_template.replace("SET_BILLING_REFERENCE", defaultBillingReference(props.cancelation.canceled_invoice_number));

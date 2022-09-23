@@ -1,8 +1,13 @@
 import { XMLDocument } from "../parser";
 import { generateSignedXMLString } from "./signing";
-import defaultSimplifiedTaxInvoice, { ZATCASimplifiedInvoiceLineItem, ZATCASimplifiedInvoiceProps } from "./templates/simplified_tax_invoice_template";
+import defaultSimplifiedTaxInvoice, {
+    ZATCASimplifiedInvoiceLineItem,
+    ZATCASimplifiedInvoiceProps,
+    ZATCAInvoiceTypes,
+    ZATCAPaymentMethods
+} from "./templates/simplified_tax_invoice_template";
 
-export {ZATCASimplifiedInvoiceLineItem, ZATCASimplifiedInvoiceProps};
+export {ZATCASimplifiedInvoiceLineItem, ZATCASimplifiedInvoiceProps, ZATCAInvoiceTypes, ZATCAPaymentMethods};
 export class ZATCASimplifiedTaxInvoice {
 
     private invoice_xml: XMLDocument;
@@ -29,8 +34,6 @@ export class ZATCASimplifiedTaxInvoice {
     }
 
     private constructLineItemTotals = (line_item: ZATCASimplifiedInvoiceLineItem) => {
-        
-        // TODO: decimal fixing according to ZATCA
 
         let line_item_total_discounts = 0;
         let line_item_total_taxes = 0;
@@ -121,32 +124,25 @@ export class ZATCASimplifiedTaxInvoice {
 
         return {
                 line_item_xml: {
-                    //  .. TODO
                     "cbc:ID": line_item.id,
-                    //  .. TODO
                     "cbc:InvoicedQuantity": {
                         "@_unitCode": "PCE",
                         "#text": line_item.quantity
                     },
-                    //  .. TODO
                     "cbc:LineExtensionAmount": {
                         "@_currencyID": "SAR",
                         "#text": line_item_total_tax_exclusive
                     },
-                    //  .. TODO
                     "cac:TaxTotal": cacTaxTotal,
-                    //  .. TODO
                     "cac:Item": {
                         "cbc:Name": line_item.name,
                         "cac:ClassifiedTaxCategory": cacClassifiedTaxCategories
                     },
-                    //  .. TODO
                     "cac:Price": {
                         "cbc:PriceAmount": {
                             "@_currencyID": "SAR",
                             "#text": line_item.tax_exclusive_price
                         },
-                        //  .. TODO
                         "cac:AllowanceCharge": cacAllowanceCharges
                     }
                 },
@@ -161,7 +157,6 @@ export class ZATCASimplifiedTaxInvoice {
 
     private constructLegalMonetaryTotal = (tax_exclusive_subtotal: number, taxes_total: number) => {
 
-        // TODO: amount decimals according to ZATCA
         return {
             "cbc:LineExtensionAmount": {
                 "@_currencyID": "SAR",
@@ -276,7 +271,7 @@ export class ZATCASimplifiedTaxInvoice {
         
 
         if(props.cancelation) {
-            // Invoice canceled. Make it a credit/debit note
+            // Invoice canceled. Tunred into credit/debit note. Must have PaymentMeans
             // BR-KSA-17
             this.invoice_xml.set("Invoice/cac:PaymentMeans", false, {
                 "cbc:PaymentMeansCode": props.cancelation.payment_method,
