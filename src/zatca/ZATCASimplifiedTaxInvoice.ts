@@ -1,8 +1,13 @@
 import { XMLDocument } from "../parser";
 import { generateSignedXMLString } from "./signing";
-import defaultSimplifiedTaxInvoice, { ZATCASimplifiedInvoiceLineItem, ZATCASimplifiedInvoiceProps } from "./templates/simplified_tax_invoice_template";
+import defaultSimplifiedTaxInvoice, {
+    ZATCASimplifiedInvoiceLineItem,
+    ZATCASimplifiedInvoiceProps,
+    ZATCAInvoiceTypes,
+    ZATCAPaymentMethods
+} from "./templates/simplified_tax_invoice_template";
 
-export {ZATCASimplifiedInvoiceLineItem, ZATCASimplifiedInvoiceProps};
+export {ZATCASimplifiedInvoiceLineItem, ZATCASimplifiedInvoiceProps, ZATCAInvoiceTypes, ZATCAPaymentMethods};
 export class ZATCASimplifiedTaxInvoice {
 
     private invoice_xml: XMLDocument;
