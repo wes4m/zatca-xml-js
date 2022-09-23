@@ -271,7 +271,7 @@ export class ZATCASimplifiedTaxInvoice {
         
 
         if(props.cancelation) {
-            // Invoice canceled. Make it a credit/debit note
+            // Invoice canceled. Tunred into credit/debit note. Must have PaymentMeans
             // BR-KSA-17
             this.invoice_xml.set("Invoice/cac:PaymentMeans", false, {
                 "cbc:PaymentMeansCode": props.cancelation.payment_method,
