@@ -1,13 +1,13 @@
 {
   "name": "zatca-xml-js",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "An implementation of Saudi Arabia ZATCA's E-Invocing requirements, processes, and standards.",
   "main": "lib/index.js",
   "files": ["lib/**/*"],
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
     "test": "tsc && node testing_lib/tests/test.js",
-    "example": "tsc && node lib/examples/full.js",
+    "example": "tsc --project tsconfig.build.json && node lib/examples/full.js",
     "prepare": "npm run build"
   },
   "devDependencies": {
