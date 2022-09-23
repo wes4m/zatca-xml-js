@@ -78,7 +78,7 @@ const generateSecp256k1KeyPair = async (): Promise<string> => {
 
 // Generate a signed ecdsaWithSHA256 CSR
 // 2.2.2 Profile specification of the Cryptographic Stamp identifiers. & CSR field contents / RDNs.
-const generateCSR = async (egs_info: EGSUnitInfo, production: boolean): Promise<string> => {
+const generateCSR = async (egs_info: EGSUnitInfo, production: boolean, solution_name: string): Promise<string> => {
     if (!egs_info.private_key) throw new Error("EGS has no private key");
 
     // This creates a temporary private file, and csr config file to pass to OpenSSL in order to create and sign the CSR.
@@ -90,7 +90,7 @@ const generateCSR = async (egs_info: EGSUnitInfo, production: boolean): Promise<
     fs.writeFileSync(csr_config_file, defaultCSRConfig({
         egs_model: egs_info.model,
         egs_serial_number: egs_info.uuid,
-        solution_name: "TODONAME",
+        solution_name: solution_name,
         vat_number: egs_info.VAT_number,
         branch_location: `${egs_info.location.building} ${egs_info.location.street}, ${egs_info.location.city}`,
         branch_industry: egs_info.branch_industry,
@@ -151,15 +151,16 @@ export class EGS {
      * Generates a new secp256k1 Public/Private key pair for the EGS.
      * Also generates and signs a new CSR.
      * `Note`: This functions uses OpenSSL thus requires it to be installed on whatever system the package is running in.
-     * @param Boolean Production CSR or Compliance CSR
+     * @param production Boolean CSR or Compliance CSR
+     * @param solution_name String name of solution generating certs.
      * @returns Promise void on success, throws error on fail.
      */
-    async generateNewKeysAndCSR(production: boolean): Promise<any> {
+    async generateNewKeysAndCSR(production: boolean, solution_name: string): Promise<any> {
         try {
             const new_private_key = await generateSecp256k1KeyPair();
             this.egs_info.private_key = new_private_key;
 
-            const new_csr = await generateCSR(this.egs_info, production);    
+            const new_csr = await generateCSR(this.egs_info, production, solution_name);    
             this.egs_info.csr = new_csr;
         } catch (error) {
             throw error;

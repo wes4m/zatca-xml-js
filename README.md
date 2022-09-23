@@ -59,7 +59,7 @@ const egsunit: EGSUnitInfo = {/*...*/};
 // Init EGS unit
 const egs = new EGS(egsunit);
 // New Keys & CSR for the EGS
-await egs.generateNewKeysAndCSR(false);
+await egs.generateNewKeysAndCSR(false, "solution_name");
 // Issue a new compliance cert for the EGS
 const compliance_rid = await egs.issueComplianceCertificate("123345");
 // Sign invoice
