@@ -1,7 +1,7 @@
 import { EGS, EGSUnitInfo } from "../zatca/egs";
 import { ZATCASimplifiedInvoiceLineItem } from "../zatca/templates/simplified_tax_invoice_template";
 import { ZATCASimplifiedTaxInvoice } from "../zatca/ZATCASimplifiedTaxInvoice";
-
+import { generatePhaseOneQR } from "../zatca/qr";
 
 // Sample line item
 const line_item: ZATCASimplifiedInvoiceLineItem = {
@@ -59,6 +59,7 @@ const invoice = new ZATCASimplifiedTaxInvoice({
 
 const main = async () => {
     try {
+
         // Init a new EGS
         const egs = new EGS(egsunit);
 
@@ -69,7 +70,7 @@ const main = async () => {
         const compliance_request_id = await egs.issueComplianceCertificate("123345");
 
         // Sign invoice
-        const {signed_invoice_string, invoice_hash} = egs.signInvoice(invoice);
+        const {signed_invoice_string, invoice_hash, qr} = egs.signInvoice(invoice);
 
         // Check invoice compliance
         console.log( await egs.checkInvoiceCompliance(signed_invoice_string, invoice_hash) );
@@ -80,6 +81,7 @@ const main = async () => {
          // Report invoice production
          // Note: This request currently fails because ZATCA sandbox returns a constant fake production certificate
         console.log( await egs.reportInvoice(signed_invoice_string, invoice_hash) );
+
 
     } catch (error: any) {
         console.log(error.message ?? error);
