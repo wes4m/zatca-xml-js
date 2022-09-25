@@ -137,18 +137,13 @@ interface generateSignatureXMLParams {
 }
 /**
  * Main signing function.
- * Signs the invoice according to the following steps:
- *  - Get the invoice hash
- *      - Invoice must be cleaned up first before hashing and indentations, trailing lines, spaces must match.
- *  - Get the certificate hash
- *      - 
  * @param invoice_xml XMLDocument of invoice to be signed.
  * @param certificate_string String signed EC certificate.
  * @param private_key_string String ec-secp256k1 private key;
- * @returns 
+ * @returns signed_invoice_string: string, invoice_hash: string, qr: string
  */
 export const generateSignedXMLString = ({invoice_xml, certificate_string, private_key_string}: generateSignatureXMLParams):
-{signed_invoice_string: string, invoice_hash: string} => {
+{signed_invoice_string: string, invoice_hash: string, qr: string} => {
 
     const invoice_copy: XMLDocument = new XMLDocument(invoice_xml.toString({no_header: false}));
 
@@ -208,7 +203,7 @@ export const generateSignedXMLString = ({invoice_xml, certificate_string, privat
     let signed_invoice_string: string = signed_invoice.toString({no_header: false});
     signed_invoice_string = signedPropertiesIndentationFix(signed_invoice_string);
 
-    return {signed_invoice_string: signed_invoice_string, invoice_hash: invoice_hash };
+    return {signed_invoice_string: signed_invoice_string, invoice_hash: invoice_hash, qr};
 }
 
 
