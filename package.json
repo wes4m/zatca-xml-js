@@ -1,7 +1,7 @@
 {
   "name": "zatca-xml-js",
-  "version": "0.1.1",
-  "description": "An implementation of Saudi Arabia ZATCA's E-Invocing requirements, processes, and standards.",
+  "version": "0.1.2",
+  "description": "An implementation of Saudi Arabia ZATCA's E-Invoicing requirements, processes, and standards.",
   "main": "lib/index.js",
   "files": ["lib/**/*"],
   "scripts": {
@@ -42,7 +42,9 @@
     "tax",
     "simplified",
     "api",
-    "saudi arabia"
+    "saudi-arabia",
+    "phase 1",
+    "phase 2"
   ],
   "author": "Wesam Alzahir (https://wes4m.io/)",
   "license": "MIT"
