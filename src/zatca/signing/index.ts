@@ -9,6 +9,7 @@ import { XMLDocument } from "../../parser";
 import { generateQR } from "../qr";
 import defaultUBLExtensions from "../templates/ubl_sign_extension_template";
 import defaultUBLExtensionsSignedProperties, {defaultUBLExtensionsSignedPropertiesForSigning} from "../templates/ubl_extension_signed_properties_template";
+import { log } from "../../logger";
 
 /**
  * Removes (UBLExtensions (Signing), Signature Envelope, and QR data) Elements. Then canonicalizes the XML to c14n.
@@ -149,15 +150,15 @@ export const generateSignedXMLString = ({invoice_xml, certificate_string, privat
 
     // 1: Invoice Hash
     const invoice_hash = getInvoiceHash(invoice_xml);
-    console.log("Invoice hash: ", invoice_hash);
+    log("Info", "Signer", `Invoice hash:  ${invoice_hash}`);
     
     // 2: Certificate hash and certificate info
     const cert_info = getCertificateInfo(certificate_string);
-    console.log("Certificate info: ", cert_info);
+    log("Info", "Signer", `Certificate info:  ${JSON.stringify(cert_info)}`);
 
     // 3: Digital Certificate
     const digital_signature = createInvoiceDigitalSignature(invoice_hash, private_key_string);
-    console.log("Digital signature: ", digital_signature);
+    log("Info", "Signer", `Digital signature: ${digital_signature}`);
 
     // 4: QR
     const qr = generateQR({
@@ -166,7 +167,7 @@ export const generateSignedXMLString = ({invoice_xml, certificate_string, privat
         public_key: cert_info.public_key,
         certificate_signature: cert_info.signature
     });
-    console.log("QR: ", qr);
+    log("Info", "Signer", `QR: ${qr}`);
 
 
     // Set Signed properties
@@ -183,7 +184,7 @@ export const generateSignedXMLString = ({invoice_xml, certificate_string, privat
     const signed_properties_bytes = Buffer.from(ubl_signature_signed_properties_xml_string_for_signing);
     let signed_properties_hash = createHash("sha256").update(signed_properties_bytes).digest('hex');
     signed_properties_hash = Buffer.from(signed_properties_hash).toString("base64");
-    console.log("Signed properites hash: ", signed_properties_hash);
+    log("Info", "Signer", `Signed properites hash: ${signed_properties_hash}`);
 
     // UBL Extensions
     let ubl_signature_xml_string = defaultUBLExtensions(

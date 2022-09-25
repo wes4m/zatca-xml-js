@@ -1,5 +1,6 @@
 import { XMLBuilder, XmlBuilderOptions, XMLParser } from "fast-xml-parser";
 import _ from "lodash";
+import { log } from "../logger";
 
 export interface XMLObject {[tag: string]: any};
 export type XMLQueryResult = XMLObject[] | undefined;
@@ -140,7 +141,7 @@ export class XMLDocument {
 
             return true;
         } catch(error: any) {
-            console.log(error.message);
+            log("Info", "Parser", error.message);
         }
         
         return false;
