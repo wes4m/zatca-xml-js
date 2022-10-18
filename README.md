@@ -1,7 +1,7 @@
 <div align="center">
   <br/>
   <img src="./docs/logo.png"/>
-  <p>v0.1.2 (experimental)</p>
+  <p>v0.1.3 (experimental)</p>
   <br/>
   <br/>
   <p>
@@ -17,7 +17,7 @@
         <img src="https://img.shields.io/badge/maintainer-wes4m-blue"/>
     </a>
     <a href="https://badge.fury.io/js/zatca-xml-js">
-      <img src="https://badge.fury.io/js/zatca-xml-js.svg/?v=0.1.2"/>
+      <img src="https://badge.fury.io/js/zatca-xml-js.svg/?v=0.1.3"/>
     </a>
   </p>
   
