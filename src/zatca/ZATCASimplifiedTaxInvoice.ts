@@ -129,9 +129,10 @@ export class ZATCASimplifiedTaxInvoice {
                         "@_unitCode": "PCE",
                         "#text": line_item.quantity
                     },
+                    // BR-DEC-23
                     "cbc:LineExtensionAmount": {
                         "@_currencyID": "SAR",
-                        "#text": line_item_total_tax_exclusive
+                        "#text": line_item_total_tax_exclusive.toFixed(2)
                     },
                     "cac:TaxTotal": cacTaxTotal,
                     "cac:Item": {
@@ -158,13 +159,15 @@ export class ZATCASimplifiedTaxInvoice {
     private constructLegalMonetaryTotal = (tax_exclusive_subtotal: number, taxes_total: number) => {
 
         return {
+            // BR-DEC-09
             "cbc:LineExtensionAmount": {
                 "@_currencyID": "SAR",
-                "#text": tax_exclusive_subtotal
+                "#text": tax_exclusive_subtotal.toFixed(2)
             },
+            // BR-DEC-12
             "cbc:TaxExclusiveAmount": {
                 "@_currencyID": "SAR",
-                "#text": tax_exclusive_subtotal
+                "#text": tax_exclusive_subtotal.toFixed(2)
             },
             // BR-DEC-14
             "cbc:TaxInclusiveAmount": {
@@ -193,9 +196,10 @@ export class ZATCASimplifiedTaxInvoice {
         // BR-DEC-13, MESSAGE : [BR-DEC-13]-The allowed maximum number of decimals for the Invoice total VAT amount (BT-110) is 2.
         const addTaxSubtotal = (taxable_amount: number, tax_amount: number, tax_percent: number) => {
             cacTaxSubtotal.push({
+                // BR-DEC-19
                 "cbc:TaxableAmount": {
                     "@_currencyID": "SAR",
-                    "#text": taxable_amount
+                    "#text": taxable_amount.toFixed(2)
                 },
                 "cbc:TaxAmount": {
                     "@_currencyID": "SAR",
