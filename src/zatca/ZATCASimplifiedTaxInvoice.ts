@@ -166,9 +166,10 @@ export class ZATCASimplifiedTaxInvoice {
                 "@_currencyID": "SAR",
                 "#text": tax_exclusive_subtotal
             },
+            // BR-DEC-14
             "cbc:TaxInclusiveAmount": {
                 "@_currencyID": "SAR",
-                "#text": tax_exclusive_subtotal + taxes_total
+                "#text": (tax_exclusive_subtotal + taxes_total).toFixed(2)
             },
             "cbc:AllowanceTotalAmount": {
                 "@_currencyID": "SAR",
@@ -178,9 +179,10 @@ export class ZATCASimplifiedTaxInvoice {
                 "@_currencyID": "SAR",
                 "#text": 0
             },
+            // BR-DEC-18
             "cbc:PayableAmount": {
                 "@_currencyID": "SAR",
-                "#text": tax_exclusive_subtotal + taxes_total
+                "#text": (tax_exclusive_subtotal + taxes_total).toFixed(2)
             }
         }
     }
