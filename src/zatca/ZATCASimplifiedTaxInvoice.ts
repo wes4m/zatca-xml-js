@@ -121,7 +121,7 @@ export class ZATCASimplifiedTaxInvoice {
             },
             "cbc:RoundingAmount": {
                 "@_currencyID": "SAR",
-                "#text":  (line_item_subtotal + line_item_total_taxes).toFixedNoRounding(2)
+                "#text":  (parseFloat(line_item_subtotal.toFixedNoRounding(2)) + parseFloat(line_item_total_taxes.toFixedNoRounding(2))).toFixedNoRounding(2)
             }
         };
 
@@ -181,7 +181,7 @@ export class ZATCASimplifiedTaxInvoice {
 
 
     private constructLegalMonetaryTotal = (tax_exclusive_subtotal: number, taxes_total: number) => {
-
+        
         return {
             // BR-DEC-09
             "cbc:LineExtensionAmount": {
@@ -196,7 +196,7 @@ export class ZATCASimplifiedTaxInvoice {
             // BR-DEC-14
             "cbc:TaxInclusiveAmount": {
                 "@_currencyID": "SAR",
-                "#text": (tax_exclusive_subtotal + taxes_total).toFixedNoRounding(2)
+                "#text": (parseFloat(tax_exclusive_subtotal.toFixedNoRounding(2)) + parseFloat(taxes_total.toFixedNoRounding(2))).toFixedNoRounding(2)
             },
             "cbc:AllowanceTotalAmount": {
                 "@_currencyID": "SAR",
@@ -209,7 +209,7 @@ export class ZATCASimplifiedTaxInvoice {
             // BR-DEC-18
             "cbc:PayableAmount": {
                 "@_currencyID": "SAR",
-                "#text": (tax_exclusive_subtotal + taxes_total).toFixedNoRounding(2)
+                "#text": (parseFloat(tax_exclusive_subtotal.toFixedNoRounding(2)) + parseFloat(taxes_total.toFixedNoRounding(2))).toFixedNoRounding(2)
             }
         }
     }
