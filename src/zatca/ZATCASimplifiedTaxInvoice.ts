@@ -7,6 +7,27 @@ import defaultSimplifiedTaxInvoice, {
     ZATCAPaymentMethods
 } from "./templates/simplified_tax_invoice_template";
 
+declare global {
+    interface Number {
+        toFixedNoRounding: (n: number) => string;
+    }
+}
+
+Number.prototype.toFixedNoRounding = function(n: number) {
+    const reg = new RegExp("^-?\\d+(?:\\.\\d{0," + n + "})?", "g")
+    let m = this.toString().match(reg);
+    if (m?.length) {
+        const a = m[0];
+        const dot = a.indexOf(".");
+        if (dot === -1) {
+            return a + "." + "0".repeat(n);
+        }
+        const b = n - (a.length - dot) + 1;
+        return b > 0 ? (a + "0".repeat(b)) : a;
+    }
+    return "0.00";
+}
+
 export {ZATCASimplifiedInvoiceLineItem, ZATCASimplifiedInvoiceProps, ZATCAInvoiceTypes, ZATCAPaymentMethods};
 export class ZATCASimplifiedTaxInvoice {
 
@@ -30,6 +51,9 @@ export class ZATCASimplifiedTaxInvoice {
             this.parseLineItems(props.line_items ?? [], props);
 
         }
+        
+
+      
 
     }
 
@@ -48,7 +72,7 @@ export class ZATCASimplifiedTaxInvoice {
         const VAT = {
             "cbc:ID": line_item.VAT_percent ? "S" : "O",
             // BT-120, KSA-121
-            "cbc:Percent": line_item.VAT_percent ? (line_item.VAT_percent * 100).toFixed(2) : undefined,
+            "cbc:Percent": line_item.VAT_percent ? (line_item.VAT_percent * 100).toFixedNoRounding(2) : undefined,
             "cac:TaxScheme": {
                 "cbc:ID": "VAT"
             }
@@ -64,7 +88,7 @@ export class ZATCASimplifiedTaxInvoice {
                 "cbc:Amount": {
                     "@_currencyID": "SAR",
                     // BR-DEC-01
-                    "#text": discount.amount.toFixed(2)
+                    "#text": discount.amount.toFixedNoRounding(2)
                 }
             });
         });
@@ -82,7 +106,7 @@ export class ZATCASimplifiedTaxInvoice {
             line_item_total_taxes += tax.percent_amount * line_item_subtotal;
             cacClassifiedTaxCategories.push({
                 "cbc:ID": "S",
-                "cbc:Percent": (tax.percent_amount * 100).toFixed(2),
+                "cbc:Percent": (tax.percent_amount * 100).toFixedNoRounding(2),
                 "cac:TaxScheme": {
                     "cbc:ID": "VAT"
                 }        
@@ -93,11 +117,11 @@ export class ZATCASimplifiedTaxInvoice {
         cacTaxTotal = {
             "cbc:TaxAmount": {
                 "@_currencyID": "SAR",
-                "#text": line_item_total_taxes.toFixed(2)
+                "#text": line_item_total_taxes.toFixedNoRounding(2)
             },
             "cbc:RoundingAmount": {
                 "@_currencyID": "SAR",
-                "#text":  (line_item_subtotal + line_item_total_taxes).toFixed(2)
+                "#text":  (line_item_subtotal + line_item_total_taxes).toFixedNoRounding(2)
             }
         };
 
@@ -132,7 +156,7 @@ export class ZATCASimplifiedTaxInvoice {
                     // BR-DEC-23
                     "cbc:LineExtensionAmount": {
                         "@_currencyID": "SAR",
-                        "#text": line_item_total_tax_exclusive.toFixed(2)
+                        "#text": line_item_total_tax_exclusive.toFixedNoRounding(2)
                     },
                     "cac:TaxTotal": cacTaxTotal,
                     "cac:Item": {
@@ -162,17 +186,17 @@ export class ZATCASimplifiedTaxInvoice {
             // BR-DEC-09
             "cbc:LineExtensionAmount": {
                 "@_currencyID": "SAR",
-                "#text": tax_exclusive_subtotal.toFixed(2)
+                "#text": tax_exclusive_subtotal.toFixedNoRounding(2)
             },
             // BR-DEC-12
             "cbc:TaxExclusiveAmount": {
                 "@_currencyID": "SAR",
-                "#text": tax_exclusive_subtotal.toFixed(2)
+                "#text": tax_exclusive_subtotal.toFixedNoRounding(2)
             },
             // BR-DEC-14
             "cbc:TaxInclusiveAmount": {
                 "@_currencyID": "SAR",
-                "#text": (tax_exclusive_subtotal + taxes_total).toFixed(2)
+                "#text": (tax_exclusive_subtotal + taxes_total).toFixedNoRounding(2)
             },
             "cbc:AllowanceTotalAmount": {
                 "@_currencyID": "SAR",
@@ -185,7 +209,7 @@ export class ZATCASimplifiedTaxInvoice {
             // BR-DEC-18
             "cbc:PayableAmount": {
                 "@_currencyID": "SAR",
-                "#text": (tax_exclusive_subtotal + taxes_total).toFixed(2)
+                "#text": (tax_exclusive_subtotal + taxes_total).toFixedNoRounding(2)
             }
         }
     }
@@ -199,11 +223,11 @@ export class ZATCASimplifiedTaxInvoice {
                 // BR-DEC-19
                 "cbc:TaxableAmount": {
                     "@_currencyID": "SAR",
-                    "#text": taxable_amount.toFixed(2)
+                    "#text": taxable_amount.toFixedNoRounding(2)
                 },
                 "cbc:TaxAmount": {
                     "@_currencyID": "SAR",
-                    "#text": tax_amount.toFixed(2)
+                    "#text": tax_amount.toFixedNoRounding(2)
                 },
                 "cac:TaxCategory": {
                     "cbc:ID": {
@@ -211,7 +235,7 @@ export class ZATCASimplifiedTaxInvoice {
                         "@_schemeID": "UN/ECE 5305",
                         "#text": tax_percent ? "S" : "O"
                     },
-                    "cbc:Percent": (tax_percent * 100).toFixed(2),
+                    "cbc:Percent": (tax_percent * 100).toFixedNoRounding(2),
                     // BR-O-10
                     "cbc:TaxExemptionReason": tax_percent ? undefined : "Not subject to VAT",
                     "cac:TaxScheme": {
@@ -246,7 +270,7 @@ export class ZATCASimplifiedTaxInvoice {
                 // Total tax amount for the full invoice
                 "cbc:TaxAmount": {
                     "@_currencyID": "SAR",
-                    "#text": taxes_total.toFixed(2)
+                    "#text": taxes_total.toFixedNoRounding(2)
                 },
                 "cac:TaxSubtotal": cacTaxSubtotal,
             },
@@ -254,7 +278,7 @@ export class ZATCASimplifiedTaxInvoice {
                 // KSA Rule for VAT tax
                 "cbc:TaxAmount": {
                     "@_currencyID": "SAR",
-                    "#text": taxes_total.toFixed(2)
+                    "#text": taxes_total.toFixedNoRounding(2)
                 }
             }
         ];
