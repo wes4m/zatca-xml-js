@@ -95,15 +95,17 @@ export class ZATCASimplifiedTaxInvoice {
 
          
         // Calc item subtotal
-        const line_item_subtotal = 
+        let line_item_subtotal = 
             (line_item.tax_exclusive_price * line_item.quantity) - line_item_total_discounts;
-
+        line_item_subtotal = parseFloat(line_item_subtotal.toFixedNoRounding(2))
 
         // Calc total taxes
         // BR-KSA-DEC-02
-        line_item_total_taxes += line_item_subtotal * line_item.VAT_percent;
+        line_item_total_taxes = parseFloat(line_item_total_taxes.toFixedNoRounding(2)) + parseFloat((line_item_subtotal * line_item.VAT_percent).toFixedNoRounding(2));
+        line_item_total_taxes = parseFloat(line_item_total_taxes.toFixedNoRounding(2));
         line_item.other_taxes?.map((tax) => {
-            line_item_total_taxes += tax.percent_amount * line_item_subtotal;
+            line_item_total_taxes = parseFloat(line_item_total_taxes.toFixedNoRounding(2)) + parseFloat((tax.percent_amount * line_item_subtotal).toFixedNoRounding(2));
+            line_item_total_taxes = parseFloat(line_item_total_taxes.toFixedNoRounding(2));
             cacClassifiedTaxCategories.push({
                 "cbc:ID": "S",
                 "cbc:Percent": (tax.percent_amount * 100).toFixedNoRounding(2),
@@ -113,7 +115,7 @@ export class ZATCASimplifiedTaxInvoice {
             })
         });
 
-        // BR-KSA-DEC-03
+        // BR-KSA-DEC-03, BR-KSA-51
         cacTaxTotal = {
             "cbc:TaxAmount": {
                 "@_currencyID": "SAR",
@@ -121,7 +123,7 @@ export class ZATCASimplifiedTaxInvoice {
             },
             "cbc:RoundingAmount": {
                 "@_currencyID": "SAR",
-                "#text":  (parseFloat(line_item_subtotal.toFixedNoRounding(2)) + parseFloat(line_item_total_taxes.toFixedNoRounding(2))).toFixedNoRounding(2)
+                "#text":  (parseFloat(line_item_subtotal.toFixedNoRounding(2)) + parseFloat(line_item_total_taxes.toFixedNoRounding(2))).toFixed(2)
             }
         };
 
@@ -193,10 +195,10 @@ export class ZATCASimplifiedTaxInvoice {
                 "@_currencyID": "SAR",
                 "#text": tax_exclusive_subtotal.toFixedNoRounding(2)
             },
-            // BR-DEC-14
+            // BR-DEC-14, BT-112
             "cbc:TaxInclusiveAmount": {
                 "@_currencyID": "SAR",
-                "#text": (parseFloat(tax_exclusive_subtotal.toFixedNoRounding(2)) + parseFloat(taxes_total.toFixedNoRounding(2))).toFixedNoRounding(2)
+                "#text": (parseFloat((tax_exclusive_subtotal + taxes_total).toFixed(2)))
             },
             "cbc:AllowanceTotalAmount": {
                 "@_currencyID": "SAR",
@@ -206,10 +208,10 @@ export class ZATCASimplifiedTaxInvoice {
                 "@_currencyID": "SAR",
                 "#text": 0
             },
-            // BR-DEC-18
+            // BR-DEC-18, BT-112
             "cbc:PayableAmount": {
                 "@_currencyID": "SAR",
-                "#text": (parseFloat(tax_exclusive_subtotal.toFixedNoRounding(2)) + parseFloat(taxes_total.toFixedNoRounding(2))).toFixedNoRounding(2)
+                "#text": (parseFloat((tax_exclusive_subtotal + taxes_total).toFixed(2)))
             }
         }
     }
@@ -256,13 +258,16 @@ export class ZATCASimplifiedTaxInvoice {
 
             let tax_amount = line_item.VAT_percent * taxable_amount;
             addTaxSubtotal(taxable_amount, tax_amount, line_item.VAT_percent);
-            taxes_total += tax_amount;
+            taxes_total += parseFloat(tax_amount.toFixedNoRounding(2));
             line_item.other_taxes?.map((tax) => {
                 tax_amount = tax.percent_amount * taxable_amount;
                 addTaxSubtotal(taxable_amount, tax_amount, tax.percent_amount);
-                taxes_total += tax_amount;
+                taxes_total += parseFloat(tax_amount.toFixedNoRounding(2));
             });
         });
+
+        // BT-110
+        taxes_total = parseFloat(taxes_total.toFixed(2));
 
         // BR-DEC-13, MESSAGE : [BR-DEC-13]-The allowed maximum number of decimals for the Invoice total VAT amount (BT-110) is 2.
         return [
@@ -291,13 +296,16 @@ export class ZATCASimplifiedTaxInvoice {
 
         let invoice_line_items: any[] = [];
         line_items.map((line_item) => {
-            
             const {line_item_xml, line_item_totals} = this.constructLineItem(line_item);
-            total_taxes += line_item_totals.taxes_total;
-            total_subtotal += line_item_totals.subtotal;
+            
+            total_taxes += parseFloat(line_item_totals.taxes_total.toFixedNoRounding(2));
+            total_subtotal += parseFloat(line_item_totals.subtotal.toFixedNoRounding(2));
 
             invoice_line_items.push(line_item_xml);          
         });
+
+        // BT-110
+        total_taxes = parseFloat(total_taxes.toFixed(2))
         
 
         if(props.cancelation) {
