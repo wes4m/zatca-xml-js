@@ -59,6 +59,7 @@ export const getInvoiceHash = (invoice_xml: XMLDocument): string => {
  */
 export const getCertificateHash = (certificate_string: string): string => {
     const certificate_hash = Buffer.from(createHash("sha256").update(certificate_string).digest('hex')).toString("base64");
+    
     return certificate_hash;
 }
 
@@ -91,6 +92,7 @@ export const getCertificateInfo = (certificate_string: string): {hash: string, i
     const cleanedup_certificate_string: string = cleanUpCertificateString(certificate_string);
     const wrapped_certificate_string: string = `-----BEGIN CERTIFICATE-----\n${cleanedup_certificate_string}\n-----END CERTIFICATE-----`;
 
+    
     const hash = getCertificateHash(cleanedup_certificate_string);
     const x509 = new X509Certificate(wrapped_certificate_string);  
 
@@ -102,7 +104,8 @@ export const getCertificateInfo = (certificate_string: string): {hash: string, i
     // decode binary x509-formatted object
     const cert = Certificate.fromPEM(Buffer.from(wrapped_certificate_string));
     
-
+   
+    
     return {
         hash: hash,
         issuer: x509.issuer.split("\n").reverse().join(", "),
@@ -119,7 +122,9 @@ export const getCertificateInfo = (certificate_string: string): {hash: string, i
  */
 export const cleanUpCertificateString = (certificate_string: string): string => {
     const r = process.platform === "win32" ? "\r" : "";
-    return certificate_string.replace(`-----BEGIN CERTIFICATE-----${r}\n`, "").replace("-----END CERTIFICATE-----", "").trim()
+    
+    
+    return certificate_string.replace(`-----BEGIN CERTIFICATE-----`, "").replace("-----END CERTIFICATE-----", "").trim()
 }
 
 /**

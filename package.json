@@ -3,7 +3,9 @@
   "version": "0.1.8",
   "description": "An implementation of Saudi Arabia ZATCA's E-Invoicing requirements, processes, and standards.",
   "main": "lib/index.js",
-  "files": ["lib/**/*"],
+  "files": [
+    "lib/**/*"
+  ],
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
     "test": "tsc && node testing_lib/tests/test.js",
@@ -12,14 +14,15 @@
   },
   "devDependencies": {
     "@types/lodash": "^4.14.184",
-    "@types/node": "^18.7.16",
+    "@types/node": "^18.11.9",
     "@types/uuid": "^8.3.4",
-    "@types/xmldom": "^0.1.31",
     "typescript": "^4.8.3"
   },
   "dependencies": {
     "@fidm/x509": "^1.2.1",
+    "@types/xmldom": "^0.1.31",
     "axios": "^0.27.2",
+    "dom-parser": "^0.1.6",
     "fast-xml-parser": "^4.0.9",
     "lodash": "^4.17.21",
     "moment": "^2.29.4",

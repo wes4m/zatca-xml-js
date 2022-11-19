@@ -82,14 +82,17 @@ class API {
                         
             if (response.status != 200) throw new Error("Error issuing a compliance certificate.");
 
-            let issued_certificate = new Buffer(response.data.binarySecurityToken, "base64").toString();
+            let issued_certificate =  Buffer.from(response.data.binarySecurityToken, "base64").toString();
             issued_certificate = `-----BEGIN CERTIFICATE-----\n${issued_certificate}\n-----END CERTIFICATE-----`;
             const api_secret = response.data.secret;
-
+            
             return {issued_certificate, api_secret, request_id: response.data.requestID};
         }
 
         const checkInvoiceCompliance = async (signed_xml_string: string, invoice_hash: string, egs_uuid: string): Promise<any> => {
+            
+            
+            
             const headers = {
                 "Accept-Version": settings.API_VERSION,
                 "Accept-Language": "en",
@@ -130,7 +133,7 @@ class API {
                         
             if (response.status != 200) throw new Error("Error issuing a production certificate.");
 
-            let issued_certificate = new Buffer(response.data.binarySecurityToken, "base64").toString();
+            let issued_certificate =  Buffer.from(response.data.binarySecurityToken, "base64").toString();
             issued_certificate = `-----BEGIN CERTIFICATE-----\n${issued_certificate}\n-----END CERTIFICATE-----`;
             const api_secret = response.data.secret;
 

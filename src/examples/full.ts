@@ -67,20 +67,20 @@ const main = async () => {
         await egs.generateNewKeysAndCSR(false, "solution_name");
 
         // Issue a new compliance cert for the EGS
-        const compliance_request_id = await egs.issueComplianceCertificate("123345");
+         const compliance_request_id = await egs.issueComplianceCertificate("123345");
 
         // Sign invoice
-        const {signed_invoice_string, invoice_hash, qr} = egs.signInvoice(invoice);
+         const {signed_invoice_string, invoice_hash, qr} = egs.signInvoice(invoice);
 
         // Check invoice compliance
-        console.log( await egs.checkInvoiceCompliance(signed_invoice_string, invoice_hash) );
+         console.log( await egs.checkInvoiceCompliance(signed_invoice_string, invoice_hash) );
 
         // Issue production certificate
-        const production_request_id = await egs.issueProductionCertificate(compliance_request_id);
+         const production_request_id = await egs.issueProductionCertificate(compliance_request_id);
         
          // Report invoice production
          // Note: This request currently fails because ZATCA sandbox returns a constant fake production certificate
-        console.log( await egs.reportInvoice(signed_invoice_string, invoice_hash) );
+         //console.log( await egs.reportInvoice(signed_invoice_string, invoice_hash) );
 
 
     } catch (error: any) {
