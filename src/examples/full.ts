@@ -60,6 +60,10 @@ const invoice = new ZATCASimplifiedTaxInvoice({
 const main = async () => {
     try {
 
+        // TEMP_FOLDER: Use .env or set directly here (Default: /tmp/)
+        // Enable for windows
+        // process.env.TEMP_FOLDER = `${require("os").tmpdir()}\\`;
+
         // Init a new EGS
         const egs = new EGS(egsunit);
 

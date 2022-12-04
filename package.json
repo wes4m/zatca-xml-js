@@ -3,7 +3,9 @@
   "version": "0.1.8",
   "description": "An implementation of Saudi Arabia ZATCA's E-Invoicing requirements, processes, and standards.",
   "main": "lib/index.js",
-  "files": ["lib/**/*"],
+  "files": [
+    "lib/**/*"
+  ],
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
     "test": "tsc && node testing_lib/tests/test.js",
