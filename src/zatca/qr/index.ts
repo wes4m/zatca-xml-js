@@ -42,7 +42,7 @@ export const generateQR = ({invoice_xml, digital_signature, public_key, certific
     const formatted_datetime = moment(datetime).format("YYYY-MM-DDTHH:mm:ss")+"Z";
     
     const qr_tlv = TLV([
-        Buffer.from(seller_name as String),
+        seller_name,
         VAT_number,
         formatted_datetime,
         invoice_total,
@@ -78,7 +78,7 @@ export const generateQR = ({invoice_xml, digital_signature, public_key, certific
     const formatted_datetime = moment(datetime).format("YYYY-MM-DDTHH:mm:ss")+"Z";
     
     const qr_tlv = TLV([
-        Buffer.from(seller_name as String),
+        seller_name,
         VAT_number,
         formatted_datetime,
         invoice_total,
