@@ -92,7 +92,8 @@ export const generateQR = ({invoice_xml, digital_signature, public_key, certific
 const TLV = (tags: any[]): Buffer => {
     const tlv_tags: Buffer[] = []
     tags.forEach((tag, i) => {
-        const current_tlv_value: Buffer = Buffer.from([i+1, tag.length, ...Buffer.from(tag)]);
+        const tagValueBuffer: Buffer = Buffer.from(tag);
+        const current_tlv_value: Buffer = Buffer.from([i+1, tagValueBuffer.byteLength, ...tagValueBuffer]);
         tlv_tags.push(current_tlv_value)
     });
     return Buffer.concat(tlv_tags);
