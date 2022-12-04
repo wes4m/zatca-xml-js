@@ -118,8 +118,7 @@ export const getCertificateInfo = (certificate_string: string): {hash: string, i
  * @returns String base64 encoded certificate body.
  */
 export const cleanUpCertificateString = (certificate_string: string): string => {
-    const r = process.platform === "win32" ? "\r" : "";
-    return certificate_string.replace(`-----BEGIN CERTIFICATE-----${r}\n`, "").replace("-----END CERTIFICATE-----", "").trim()
+    return certificate_string.replace(`-----BEGIN CERTIFICATE-----\n`, "").replace("-----END CERTIFICATE-----", "").trim()
 }
 
 /**
@@ -128,8 +127,7 @@ export const cleanUpCertificateString = (certificate_string: string): string => 
  * @returns String base64 encoded private key body.
  */
  export const cleanUpPrivateKeyString = (certificate_string: string): string => {
-    const r = process.platform === "win32" ? "\r" : "";
-    return certificate_string.replace(`-----BEGIN EC PRIVATE KEY-----${r}\n`, "").replace("-----END EC PRIVATE KEY-----", "").trim()
+    return certificate_string.replace(`-----BEGIN EC PRIVATE KEY-----\n`, "").replace("-----END EC PRIVATE KEY-----", "").trim()
 }
 
 
