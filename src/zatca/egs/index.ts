@@ -84,8 +84,8 @@ const generateCSR = async (egs_info: EGSUnitInfo, production: boolean, solution_
     // This creates a temporary private file, and csr config file to pass to OpenSSL in order to create and sign the CSR.
     // * In terms of security, this is very bad as /tmp can be accessed by all users. a simple watcher by unauthorized user can retrieve the keys.
     // Better change it to some protected dir.
-    const private_key_file = `/tmp/${uuidv4()}.pem`;
-    const csr_config_file = `/tmp/${uuidv4()}.cnf`;
+    const private_key_file = `${process.env.TEMP_FOLDER ?? "/tmp/"}${uuidv4()}.pem`;
+    const csr_config_file = `${process.env.TEMP_FOLDER ?? "/tmp/"}${uuidv4()}.cnf`;
     fs.writeFileSync(private_key_file, egs_info.private_key);
     fs.writeFileSync(csr_config_file, defaultCSRConfig({
         egs_model: egs_info.model,
