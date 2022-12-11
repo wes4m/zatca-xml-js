@@ -126,9 +126,9 @@ export class EGS {
     private egs_info: EGSUnitInfo;
     private api: API;
 
-    constructor(egs_info: EGSUnitInfo) {
+    constructor(egs_info: EGSUnitInfo, isProduction: boolean = false) {
         this.egs_info = egs_info;
-        this.api = new API();
+        this.api = new API(isProduction);
     }
 
 
