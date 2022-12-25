@@ -1,15 +1,4 @@
-/**
- * This module requires OpenSSL to be installed on the system. 
- * Using an OpenSSL In order to generate secp256k1 key pairs, a CSR and sign it.
- * I was unable to find a working library that supports the named curve `secp256k1` and do not want to implement my own JS based crypto.
- * Any crypto expert contributions to move away from OpenSSL to JS will be appreciated.
- */
-
-import { spawn } from "child_process";
-import { v4 as uuidv4 } from 'uuid';
-import fs from "fs";
-
-import defaultCSRConfig from "../templates/csr_template";
+import rs from 'jsrsasign';
 import API from "../api";
 import { ZATCASimplifiedTaxInvoice } from "../ZATCASimplifiedTaxInvoice";
 
@@ -40,86 +29,6 @@ export interface EGSUnitInfo {
     production_certificate?: string,
     production_api_secret?: string,
 }
-
-const OpenSSL = (cmd: string[]): Promise<string> => {
-    return new Promise<string>((resolve, reject) => {
-        try {
-            const command = spawn("openssl", cmd);
-            let result = "";
-            command.stdout.on("data", (data) => {
-                 result += data.toString();
-            });
-            command.on("close", (code: number) => {
-                return resolve(result);
-            });
-            command.on("error", (error: any) => {
-                return reject(error);
-            });
-        } catch (error: any) {
-            reject(error);
-        }
-    });
-}
-
-// Generate a secp256k1 key pair
-// https://techdocs.akamai.com/iot-token-access-control/docs/generate-ecdsa-keys
-// openssl ecparam -name secp256k1 -genkey -noout -out ec-secp256k1-priv-key.pem
-const generateSecp256k1KeyPair = async (): Promise<string> => {
-    try {
-        const result = await OpenSSL(["ecparam", "-name", "secp256k1", "-genkey"]);
-        if (!result.includes("-----BEGIN EC PRIVATE KEY-----")) throw new Error("Error no private key found in OpenSSL output.");
-
-        let private_key: string = `-----BEGIN EC PRIVATE KEY-----${result.split("-----BEGIN EC PRIVATE KEY-----")[1]}`.trim();
-        return private_key;
-    } catch (error) {
-        throw error;
-    }
-}
-
-// Generate a signed ecdsaWithSHA256 CSR
-// 2.2.2 Profile specification of the Cryptographic Stamp identifiers. & CSR field contents / RDNs.
-const generateCSR = async (egs_info: EGSUnitInfo, production: boolean, solution_name: string): Promise<string> => {
-    if (!egs_info.private_key) throw new Error("EGS has no private key");
-
-    // This creates a temporary private file, and csr config file to pass to OpenSSL in order to create and sign the CSR.
-    // * In terms of security, this is very bad as /tmp can be accessed by all users. a simple watcher by unauthorized user can retrieve the keys.
-    // Better change it to some protected dir.
-    const private_key_file = `${process.env.TEMP_FOLDER ?? "/tmp/"}${uuidv4()}.pem`;
-    const csr_config_file = `${process.env.TEMP_FOLDER ?? "/tmp/"}${uuidv4()}.cnf`;
-    fs.writeFileSync(private_key_file, egs_info.private_key);
-    fs.writeFileSync(csr_config_file, defaultCSRConfig({
-        egs_model: egs_info.model,
-        egs_serial_number: egs_info.uuid,
-        solution_name: solution_name,
-        vat_number: egs_info.VAT_number,
-        branch_location: `${egs_info.location.building} ${egs_info.location.street}, ${egs_info.location.city}`,
-        branch_industry: egs_info.branch_industry,
-        branch_name: egs_info.branch_name,
-        taxpayer_name: egs_info.VAT_name,
-        taxpayer_provided_id: egs_info.custom_id,
-        production: production
-    }));
-    
-    const cleanUp = () => {
-        fs.unlink(private_key_file, ()=>{});
-        fs.unlink(csr_config_file, ()=>{});
-    };
-    
-    try {    
-        const result = await OpenSSL(["req", "-new", "-sha256", "-key", private_key_file, "-config", csr_config_file]);
-        if (!result.includes("-----BEGIN CERTIFICATE REQUEST-----")) throw new Error("Error no CSR found in OpenSSL output.");
-
-        let csr: string = `-----BEGIN CERTIFICATE REQUEST-----${result.split("-----BEGIN CERTIFICATE REQUEST-----")[1]}`.trim();
-        cleanUp();
-        return csr;
-    } catch (error) {
-        cleanUp();
-        throw error;
-    }
-}
-
-
-
 
 export class EGS {
 
@@ -156,17 +65,80 @@ export class EGS {
      * @returns Promise void on success, throws error on fail.
      */
     async generateNewKeysAndCSR(production: boolean, solution_name: string): Promise<any> {
-        try {
-            const new_private_key = await generateSecp256k1KeyPair();
-            this.egs_info.private_key = new_private_key;
+        const { egs_info } = this;
 
-            const new_csr = await generateCSR(this.egs_info, production, solution_name);    
-            this.egs_info.csr = new_csr;
+        try {
+            const kp = rs.KEYUTIL.generateKeypair("EC", "secp256k1");
+            const privateKey = rs.KEYUTIL.getPEM(kp.prvKeyObj, "PKCS8PRV");
+            const publicKey = rs.KEYUTIL.getPEM(kp.pubKeyObj);
+
+            const csr = new rs.KJUR.asn1.csr.CertificationRequest({
+                sbjpubkey: publicKey,
+                sbjprvkey: privateKey,
+                sigalg: "SHA256withECDSA",
+                subject: {str: `/commonName=${egs_info.custom_id}/organizationalUnitName=${egs_info.branch_name}/organizationName=${egs_info.VAT_name}/countryName=SA`},
+                "extreq": [
+                    {
+                        "extname": "1.3.6.1.4.1.311.20.2",
+                        // extn produce a type error but it's required for custom extenstions
+                        // @ts-expect-error
+                        extn: {seq: [{utf8str: production ? "ZATCA-Code-Signing" : "TSTZATCA-Code-Signing" }]}
+                    },
+                    {
+                        "extname": "subjectAltName",
+                        "array": [
+                            {
+                                "dn": {
+                                    "array": [
+                                        [
+                                            {
+                                                "type": "SN",
+                                                "value": `1-${solution_name}|2-${egs_info.model}|3-${egs_info.uuid}`
+                                            }
+                                        ],
+                                        [
+                                            {
+                                                "type": "UID",
+                                                "value": egs_info.VAT_number
+                                            }
+                                        ],
+                                        [
+                                            {
+                                                "type": "title",
+                                                "value": "0100"
+                                            }
+                                        ],
+                                        [
+                                            {
+                                                // registeredAddress (oid)
+                                                "type": "2.5.4.26",
+                                                "value": `${egs_info.location.building} ${egs_info.location.street}, ${egs_info.location.city}`
+                                            }
+                                        ],
+                                        [
+                                            {
+                                                "type": "businessCategory",
+                                                "value": egs_info.branch_industry
+                                            }
+                                        ]
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                ]
+            });
+
+            this.egs_info.private_key = privateKey;
+            this.egs_info.csr = csr.getPEM();
+
+            // uncomment to debug csr values!
+            // var json = rs.KJUR.asn1.csr.CSRUtil.getParam(csr.getPEM());
+            // console.log(JSON.stringify(json, null, 4));
         } catch (error) {
             throw error;
         }
     }
-
 
     /**
      * Generates a new compliance certificate through ZATCA API.
@@ -194,7 +166,7 @@ export class EGS {
         const issued_data = await this.api.production(this.egs_info.compliance_certificate, this.egs_info.compliance_api_secret).issueCertificate(compliance_request_id);
         this.egs_info.production_certificate = issued_data.issued_certificate;
         this.egs_info.production_api_secret = issued_data.api_secret;
-        
+
         return issued_data.request_id;
     }
 
