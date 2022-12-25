@@ -81,16 +81,19 @@ const main = async () => {
 
         // Issue production certificate
         const production_request_id = await egs.issueProductionCertificate(compliance_request_id);
-        
+
          // Report invoice production
          // Note: This request currently fails because ZATCA sandbox returns a constant fake production certificate
         console.log( await egs.reportInvoice(signed_invoice_string, invoice_hash) );
 
 
     } catch (error: any) {
-        console.log(error.message ?? error);
+        if (error.response && error.response.data) {
+            console.log(JSON.stringify(error.response?.data, null, 4));
+        } else {
+            console.log(error?.message ?? error)
+        }
     }
 }
-
 
 main();
