@@ -60,7 +60,7 @@ class API {
             const certificate_stripped = cleanUpCertificateString(certificate);
             const basic = Buffer.from(`${Buffer.from(certificate_stripped).toString("base64")}:${secret}`).toString("base64");
             return {
-                "Authorization": `Basic ${basic}`   
+                "Authorization": `Basic ${basic}`
             };
         }
         return {};
@@ -79,10 +79,10 @@ class API {
                 {csr: Buffer.from(csr).toString("base64")},
                 {headers: {...auth_headers, ...headers}}
             );
-                        
+
             if (response.status != 200) throw new Error("Error issuing a compliance certificate.");
 
-            let issued_certificate = new Buffer(response.data.binarySecurityToken, "base64").toString();
+            let issued_certificate = Buffer.from(response.data.binarySecurityToken, "base64").toString();
             issued_certificate = `-----BEGIN CERTIFICATE-----\n${issued_certificate}\n-----END CERTIFICATE-----`;
             const api_secret = response.data.secret;
 
@@ -103,11 +103,11 @@ class API {
                 },
                 {headers: {...auth_headers, ...headers}}
             );
-                        
+
             if (response.status != 200) throw new Error("Error in compliance check.");
             return response.data;
         }
-        
+
         return {
             issueCertificate,
             checkInvoiceCompliance
@@ -127,10 +127,10 @@ class API {
                 {compliance_request_id: compliance_request_id},
                 {headers: {...auth_headers, ...headers}}
             );
-                        
+
             if (response.status != 200) throw new Error("Error issuing a production certificate.");
 
-            let issued_certificate = new Buffer(response.data.binarySecurityToken, "base64").toString();
+            let issued_certificate = Buffer.from(response.data.binarySecurityToken, "base64").toString();
             issued_certificate = `-----BEGIN CERTIFICATE-----\n${issued_certificate}\n-----END CERTIFICATE-----`;
             const api_secret = response.data.secret;
 
@@ -152,7 +152,7 @@ class API {
                 },
                 {headers: {...auth_headers, ...headers}}
             );
-                        
+
             if (response.status != 200) throw new Error("Error in reporting invoice.");
             return response.data;
         }
@@ -162,8 +162,6 @@ class API {
             reportInvoice
         }
     }
-  
-
 }
 
 export default API;
