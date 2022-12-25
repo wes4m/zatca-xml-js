@@ -3,8 +3,7 @@ import xmldom from "xmldom";
 import { createHash, createSign, X509Certificate } from "crypto";
 import moment from "moment";
 import {Certificate} from "@fidm/x509";
-
-
+import rs from 'jsrsasign';
 import { XMLDocument } from "../../parser";
 import { generateQR } from "../qr";
 import defaultUBLExtensions from "../templates/ubl_sign_extension_template";
@@ -26,9 +25,9 @@ export const getPureInvoiceString = (invoice_xml: XMLDocument): string => {
     const invoice_xml_dom = (new xmldom.DOMParser()).parseFromString(
         invoice_copy.toString({no_header: false})
     );
-    
+
     var canonicalizer = new XmlCanonicalizer(false, false);
-    const canonicalized_xml_str: string = canonicalizer.Canonicalize(invoice_xml_dom);        
+    const canonicalized_xml_str: string = canonicalizer.Canonicalize(invoice_xml_dom);
 
     return canonicalized_xml_str;
 }
@@ -46,7 +45,7 @@ export const getInvoiceHash = (invoice_xml: XMLDocument): string => {
     // A dumb workaround for whatever reason ZATCA XML devs decided to include those trailing spaces and a newlines. (without it the hash is incorrect)
     pure_invoice_string = pure_invoice_string.replace("<cbc:ProfileID>", "\n    <cbc:ProfileID>");
     pure_invoice_string = pure_invoice_string.replace("<cac:AccountingSupplierParty>", "\n    \n    <cac:AccountingSupplierParty>");
-    
+
     return createHash("sha256").update(pure_invoice_string).digest('base64');
 }
 
@@ -72,14 +71,11 @@ export const getCertificateHash = (certificate_string: string): string => {
  * @returns String base64 encoded digital signature.
  */
 export const createInvoiceDigitalSignature = (invoice_hash: string, private_key_string: string): string => {
-    const invoice_hash_bytes = Buffer.from(invoice_hash, "base64");
-    const cleanedup_private_key_string: string = cleanUpPrivateKeyString(private_key_string);
-    const wrapped_private_key_string: string = `-----BEGIN EC PRIVATE KEY-----\n${cleanedup_private_key_string}\n-----END EC PRIVATE KEY-----`;
-
-    var sign = createSign('sha256');
-    sign.update(invoice_hash_bytes);
-    var signature = Buffer.from(sign.sign(wrapped_private_key_string)).toString("base64");
-    return signature;
+    var sig = new rs.KJUR.crypto.Signature({"alg": "SHA256withECDSA"});
+    sig.init(private_key_string);
+    sig.updateString(invoice_hash);
+    const signature = sig.sign();
+    return Buffer.from(signature, "hex").toString("base64");
 }
 
 /**
@@ -92,16 +88,15 @@ export const getCertificateInfo = (certificate_string: string): {hash: string, i
     const wrapped_certificate_string: string = `-----BEGIN CERTIFICATE-----\n${cleanedup_certificate_string}\n-----END CERTIFICATE-----`;
 
     const hash = getCertificateHash(cleanedup_certificate_string);
-    const x509 = new X509Certificate(wrapped_certificate_string);  
+    const x509 = new X509Certificate(wrapped_certificate_string);
 
-    // Signature, and public key extraction from x509 PEM certificate (asn1 rfc5280) 
+    // Signature, and public key extraction from x509 PEM certificate (asn1 rfc5280)
     // Crypto module does not have those functionalities so i'm the crypto boy now :(
     // https://github.com/nodejs/node/blob/main/src/crypto/crypto_x509.cc
     // https://linuxctl.com/2017/02/x509-certificate-manual-signature-verification/
     // https://github.com/junkurihara/js-x509-utils/blob/develop/src/x509.js
     // decode binary x509-formatted object
     const cert = Certificate.fromPEM(Buffer.from(wrapped_certificate_string));
-    
 
     return {
         hash: hash,
@@ -151,7 +146,7 @@ export const generateSignedXMLString = ({invoice_xml, certificate_string, privat
     // 1: Invoice Hash
     const invoice_hash = getInvoiceHash(invoice_xml);
     log("Info", "Signer", `Invoice hash:  ${invoice_hash}`);
-    
+
     // 2: Certificate hash and certificate info
     const cert_info = getCertificateInfo(certificate_string);
     log("Info", "Signer", `Certificate info:  ${JSON.stringify(cert_info)}`);
@@ -218,7 +213,7 @@ const signedPropertiesIndentationFix = (signed_invoice_string: string): string =
     let fixer = signed_invoice_string;
     let signed_props_lines: string[] = fixer.split("<ds:Object>")[1].split("</ds:Object>")[0].split("\n");
     let fixed_lines: string[] = [];
-    // Stripping first 4 spaces 
+    // Stripping first 4 spaces
     signed_props_lines.map((line) => fixed_lines.push(line.slice(4, line.length)));
     signed_props_lines = signed_props_lines.slice(0, signed_props_lines.length-1);
     fixed_lines = fixed_lines.slice(0, fixed_lines.length-1);
