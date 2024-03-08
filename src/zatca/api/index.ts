@@ -80,7 +80,7 @@ class API {
                 {headers: {...auth_headers, ...headers}}
             );
                         
-            if (response.status != 200) throw new Error("Error issuing a compliance certificate.");
+            if (response.status >= 300) throw new Error("Error issuing a compliance certificate.");
 
             let issued_certificate = new Buffer(response.data.binarySecurityToken, "base64").toString();
             issued_certificate = `-----BEGIN CERTIFICATE-----\n${issued_certificate}\n-----END CERTIFICATE-----`;
@@ -104,7 +104,7 @@ class API {
                 {headers: {...auth_headers, ...headers}}
             );
                         
-            if (response.status != 200) throw new Error("Error in compliance check.");
+            if (response.status >= 300) throw new Error("Error in compliance check.");
             return response.data;
         }
         
@@ -128,7 +128,7 @@ class API {
                 {headers: {...auth_headers, ...headers}}
             );
                         
-            if (response.status != 200) throw new Error("Error issuing a production certificate.");
+            if (response.status >= 300) throw new Error("Error issuing a production certificate.");
 
             let issued_certificate = new Buffer(response.data.binarySecurityToken, "base64").toString();
             issued_certificate = `-----BEGIN CERTIFICATE-----\n${issued_certificate}\n-----END CERTIFICATE-----`;
@@ -153,7 +153,7 @@ class API {
                 {headers: {...auth_headers, ...headers}}
             );
                         
-            if (response.status != 200) throw new Error("Error in reporting invoice.");
+            if (response.status >= 300) throw new Error("Error in reporting invoice.");
             return response.data;
         }
 
